@@ -11,7 +11,8 @@ Version: 1.7.2
 */
 
 
- 
+require plugin_dir_path( __FILE__ ) . 'wp-basic-crud.php';
+
 // function to create the DB / Options / Defaults					
 function partenaire_options_install() {
 
@@ -44,7 +45,21 @@ function partenaire_options_install() {
         numero_telephone varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         siret varchar(255) NOT NULL,
+        -- code_postal varchar(255) NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+    // create code_postal table with partenaire_id as foreign key
+    $code_postal_table_name = $wpdb->prefix . "code_postal";
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $code_postal_table_name (
+        id int(11) NOT NULL AUTO_INCREMENT,
         code_postal varchar(255) NOT NULL,
+        partenaire_id int(11) NOT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";
 
@@ -111,91 +126,36 @@ add_action( 'wp_enqueue_scripts', 'partenaire_public_css' );
 // add_action('admin_menu', 'partenaire');
  
 
-function partenaire_menu() {
-    add_menu_page('Partenaire', 'Partenaire', 'manage_options', __FILE__, 'partenaire', plugins_url('MyPluginFolder/images/icon.png') );
-    add_submenu_page(__FILE__, 'Liste des partenaires', 'Liste des partenaires', 'manage_options', 'partenaire', 'partenaire_admin_liste_des_partenaires');
-    add_submenu_page(__FILE__, 'Importer des villes', 'Importer des villes', 8, 'myplugin-cars-page', 'partenaire_admin_liste_des_villes');
-}
-add_action('admin_menu', 'partenaire_menu');
+// function partenaire_menu() {
+//     add_menu_page('Partenaire', 'Partenaire', 'manage_options', __FILE__, 'main_partenaire', plugins_url('MyPluginFolder/images/icon.png') );
+//     add_submenu_page(__FILE__, 'Liste des partenaires', 'Liste des partenaires', 'manage_options', 'partenaire', 'partenaire_admin_liste_des_partenaires');
+//     add_submenu_page(__FILE__, 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
+// }
+// add_action('admin_menu', 'partenaire_menu');
 
 // function partenaire_plugin_setup_menu(){
 //     add_menu_page( 'Page des partenaires', 'Importer des villes', 'manage_options', 'aprtenaire-plugin', 'partenaire_admin_liste_des_villes' );
 // }
 
 function partenaire_admin_liste_des_partenaires() {
+    
+    include_once(plugin_dir_path( __FILE__ ) . '/admin/list_partenaire.php');
+
     // call list partenaire function
-    // list_partenaire();
-    // include plugin_dir_path( __FILE__ ) . 'partenaire.php';
-    // var_dump(plugin_dir_path( __FILE__ ) . '/admin/partenaire.php');
-    
-    include(plugin_dir_path( __FILE__ ) . '/admin/list_partenaire.php');
+    list_partenaire();
 }
 
-function partenaire(){
+function main_partenaire(){
 
-    // call adding new partenaire function
+    
+    include_once(plugin_dir_path( __FILE__ ) . '/admin/add_partenaire.php');
+
+    // call add partenaire function
     add_partenaire();
-    
-    // form to add new partenaire
-    echo '<div class="container">';
-    echo '<div class="row">';
-    echo '<div class="col-md-12">';
-    echo '<h1>Ajouter un partenaire</h1>';
-    echo '<form method="post" action="' . $_SERVER['REQUEST_URI'] . '" enctype="multipart/form-data">';
-    echo '<input type="hidden" name="partenaire_nonce" value="' . wp_create_nonce(__FILE__) . '" />';
-    echo '<table class="form-table">';
-    echo '<tbody>';
-    echo '<tr>';
-    echo '<th scope="row"><label for="partenaire_nom">Nom</label></th>';
-    echo '<td><input name="partenaire_nom" type="text" id="partenaire_nom" class="regular-text" value="" /></td>';
-    echo '</tr>';
-    echo '<tr>';
-    echo '<th scope="row"><label for="partenaire_adresse">Numéro de téléphone</label></th>';
-    echo '<td><input name="numero_telephone" type="text" id="numero_telephone" class="regular-text" value="" /></td>';
-    echo '</tr>';
-    echo '<tr>';
-    echo '<th scope="row"><la for="partenaire_adresse">Email</label></th>';
-    echo '<td><input name="email" type="text" id="email" class="regular-text" value="" /></td>';
-    echo '</tr>';
-    echo '<tr>';
-    echo '<th scope="row"><label for="partenaire_adresse">Siret</label></th>';
-    echo '<td><input name="siret" type="text" id="siret" class="regular-text" value="" /></td>';
-    echo '</tr>';
-    echo '<tr>';
-    echo '<th scope="row"><label for="partenaire_adresse">Code postal</label></th>';
-    echo '<td><input name="code_postal" type="text" id="code_postal" class="regular-text" value="" /></td>';
-    echo '</tr>';
-    echo '</tbody>';
-    echo '</table>';
-    echo '<p class="submit"><input type="submit" name="submitPartenaire" id="submitPartenaire" class="button button-primary" value="Ajouter"></p>';
-    echo '</form>';
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
 
-}
-
-function add_partenaire(){
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'partenaire';
-
-    if (isset($_POST['submitPartenaire'])) {
-        $nom = $_POST['partenaire_nom'];
-        $numero_telephone = $_POST['numero_telephone'];
-        $email = $_POST['email'];
-        $siret = $_POST['siret'];
-        $code_postal = $_POST['code_postal'];
-        $wpdb->insert(
-            $table_name,
-            array(
-                'partenaire_nom' => $nom,
-                'numero_telephone' => $numero_telephone,
-                'email' => $email,
-                'siret' => $siret,
-                'code_postal' => $code_postal
-            )
-        );
-    }
+    // call insert partenaire function
+    insert_partenaire();
+ 
 }
 
    
