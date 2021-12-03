@@ -28,6 +28,55 @@ function wpbc_contacts_page_handler()
 <?php
 }
 
+ // create partenaire page to assign code postal
+ function add_code_postal_page()
+ {
+
+     global $wpdb;
+     $table_name = $wpdb->prefix . 'partenaire'; 
+     $id = $_REQUEST['id'];
+     $partenaire = $wpdb->get_results("SELECT * FROM $table_name WHERE id = $id");
+     
+     ?>
+     <div class="wrap">
+     <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
+                                href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>"><?php _e('Retour à la liste', 'wpbc')?></a>
+    </h2>
+
+         <h2>Assigner un ou plusieurs code postal (aux) au partenaire <?php echo $partenaire[0]->name; ?></h2>
+         <!-- exemple des formats de code postal -->
+            <p>Vous pouvez assigner un seul code postal. par exemple : <strong>75001</strong></p>
+            <p>Vous pouvez assigner plusieurs code postaux en les séparant par une virgule. par exemple : <strong>75001,75002,75003</strong></p>
+            <p>Vous pouvez assigner un intervalle de code postal. par exemple : <strong>75001-75003</strong></p>
+        <!-- fin exemple -->
+
+        <!-- Laisser une alert à l'utilisateur -->
+        <div class="alert alert-danger" role="alert">
+            <strong>Note!</strong> Si le partenaire a déjà un ou plusieurs code postal(aux) assigné(s), vous pouvez lui assigner d'autres en les séparant par une virgule.
+        </div>
+        
+         <form method="post" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>" enctype="multipart/form-data" >
+             <table class="form-table">
+                 <tbody>
+                     <tr>
+                         <th scope="row">
+                             <label for="code_postal">Code Postal </label>
+                         </th>
+                         <td>
+                             <input name="code_postal" type="text" id="code_postal" value="<?php echo $partenaire[0]->code_postal;?>" class="regular-text">
+                         </td>
+                     </tr>
+                 </tbody>
+             </table>
+             <input type="hidden" name="partenaire_id" value="<?php echo $id; ?>">
+             <input type="submit" name="submitCodePostal" id="submitCodePostal" class="button button-primary" value="Enregistrer">
+         </form>
+     </div>
+     <?php
+     
+ }
+
+
 
 function wpbc_contacts_form_page_handler()
 {
@@ -40,8 +89,8 @@ function wpbc_contacts_form_page_handler()
 
     $default = array(
         'id' => 0,
-        'partenaire_nom'      => '',
-        'numero_telephone'  => '',
+        'name'      => '',
+        'phone'  => '',
         'email'     => '',
         'siret'     => '',
         'code_postal'     => '',
@@ -94,7 +143,7 @@ function wpbc_contacts_form_page_handler()
 <div class="wrap">
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
     <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
-                                href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=contacts');?>"><?php _e('Retour à la liste', 'wpbc')?></a>
+                                href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>"><?php _e('Retour à la liste', 'wpbc')?></a>
     </h2>
 
     <?php if (!empty($notice)): ?>
@@ -133,14 +182,14 @@ function wpbc_contacts_form_meta_box_handler($item)
     <form >
 		<div class="form2bc">
         <p>			
-		    <label for="partenaire_nom"><?php _e('Nom', 'wpbc')?></label>
+		    <label for="name"><?php _e('Nom', 'wpbc')?></label>
 		<br>	
-            <input id="partenaire_nom" name="partenaire_nom" type="text" value="<?php echo esc_attr($item['partenaire_nom'])?>"
+            <input id="name" name="name" type="text" value="<?php echo esc_attr($item['name'])?>"
                     required>
 		</p><p>	
-            <label for="numero_telephone"><?php _e('Numero de telephone', 'wpbc')?></label>
+            <label for="phone"><?php _e('Numero de telephone', 'wpbc')?></label>
 		<br>
-		    <input id="numero_telephone" name="numero_telephone" type="text" value="<?php echo esc_attr($item['numero_telephone'])?>"
+		    <input id="phone" name="phone" type="text" value="<?php echo esc_attr($item['phone'])?>"
                     required>
         </p>
 		</div>	

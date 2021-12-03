@@ -15,57 +15,6 @@ require plugin_dir_path( __FILE__ ) . 'wp-basic-crud.php';
 
 // function to create the DB / Options / Defaults					
 function partenaire_options_install() {
-
-    global $wpdb;
-    $table_name = $wpdb->prefix . "villes_france";
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
-        Code_commune_INSEE int(11) NULL,
-        Nom_commune varchar(255) NOT NULL,
-        Code_postal varchar(255)  NULL,
-        Ligne_5 varchar(255) NULL,
-        Libelle_d_acheminement varchar(255) NULL,
-        -- coordonnees_gps varchar(255) NOT NULL,
-        -- code_commune_etrangere varchar(255) NOT NULL,
-        PRIMARY KEY  (id)
-    ) $charset_collate;";
-
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-
-    // create partenaire table
-    $partenaire_table_name = $wpdb->prefix . "partenaire";
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $partenaire_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
-        partenaire_nom varchar(255) NOT NULL,
-        numero_telephone varchar(255) NOT NULL,
-        email varchar(255) NOT NULL,
-        siret varchar(255) NOT NULL,
-        -- code_postal varchar(255) NOT NULL,
-        PRIMARY KEY  (id)
-    ) $charset_collate;";
-
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-
-    // create code_postal table with partenaire_id as foreign key
-    $code_postal_table_name = $wpdb->prefix . "code_postal";
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $code_postal_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
-        code_postal varchar(255) NOT NULL,
-        partenaire_id int(11) NOT NULL,
-        PRIMARY KEY  (id)
-    ) $charset_collate;";
-
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-
     // insert data from CSV file
     
     // $csv_file = plugin_dir_path( __FILE__ ) . 'partenaire.csv';
@@ -93,7 +42,65 @@ function partenaire_options_install() {
  
 }
 // run the install scripts upon plugin activation
-register_activation_hook(__FILE__,'partenaire_options_install');
+// register_activation_hook(__FILE__,'partenaire_options_install');
+
+
+function wpbc_install()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . "villes_france";
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id int(11) NOT NULL AUTO_INCREMENT,
+        Code_commune_INSEE int(11) NULL,
+        Nom_commune varchar(255) NOT NULL,
+        Code_postal varchar(255)  NULL,
+        Ligne_5 varchar(255) NULL,
+        Libelle_d_acheminement varchar(255) NULL,
+        -- coordonnees_gps varchar(255) NOT NULL,
+        -- code_commune_etrangere varchar(255) NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+    // create partenaire table
+    $partenaire_table_name = $wpdb->prefix . "partenaire";
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $partenaire_table_name (
+        id int(11) NOT NULL AUTO_INCREMENT,
+        name  varchar (50) NOT NULL,
+        phone varchar(255) NOT NULL,
+        email varchar(255) NOT NULL,
+        siret varchar(255) NOT NULL,
+        code_postal varchar(255) NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+    // create code_postal table with partenaire_id as foreign key
+    $code_postal_table_name = $wpdb->prefix . "code_postal";
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $code_postal_table_name (
+        id int(11) NOT NULL AUTO_INCREMENT,
+        code_postal varchar(255) NOT NULL,
+        partenaire_id int(11) NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+   
+}
+
+register_activation_hook(__FILE__, 'wpbc_install');
 
 
 /**

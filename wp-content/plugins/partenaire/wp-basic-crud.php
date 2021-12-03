@@ -1,16 +1,4 @@
 <?php
-/**
-* Plugin Name: WP Basic Crud 
-* Description: This plugin to create custom contact list-tables from database using WP_List_Table class.
-* Version:     2.1.3
-* Plugin URI: https://labarta.es/wp-basic-crud-plugin-wordpress/
-* Author:      Labarta
-* Author URI:  https://labarta.es/
-* License:     GPLv2 or later
-* License URI: https://www.gnu.org/licenses/gpl-2.0.html
-* Text Domain: wpbc
-* Domain Path: /languages
-*/
 
 defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
 
@@ -31,63 +19,6 @@ add_action( 'plugins_loaded', 'wpbc_plugin_load_textdomain' );
 global $wpbc_db_version;
 $wpbc_db_version = '1.1.0'; 
 
-
-function wpbc_install()
-{
-    global $wpdb;
-    global $wpbc_db_version;
-
-    $table_name = $wpdb->prefix . 'partenaire'; 
-
-
-    $sql = "CREATE TABLE " . $table_name . " (
-      id int(11) NOT NULL AUTO_INCREMENT,
-      name VARCHAR (50) NOT NULL,
-      lastname VARCHAR (100) NOT NULL,
-      email VARCHAR(100) NOT NULL,
-      phone VARCHAR(15) NULL,
-      company VARCHAR(100) NULL,
-      web VARCHAR(100) NULL,  
-      two_email VARCHAR(100) NULL,   
-      two_phone VARCHAR(15) NULL,  
-      job VARCHAR(100) NULL,
-      address VARCHAR (250) NULL,
-      notes VARCHAR (250) NULL,
-      PRIMARY KEY  (id)
-    );";
-
-
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
-
-    add_option('wpbc_db_version', $wpbc_db_version);
-
-    $installed_ver = get_option('wpbc_db_version');
-    if ($installed_ver != $wpbc_db_version) {
-        $sql = "CREATE TABLE " . $table_name . " (
-          id int(11) NOT NULL AUTO_INCREMENT,
-          name VARCHAR (50) NOT NULL,
-          lastname VARCHAR (100) NOT NULL,
-          email VARCHAR(100) NOT NULL,
-          phone VARCHAR(15) NULL,
-          company VARCHAR(100) NULL,
-          web VARCHAR(100) NULL,  
-          two_email VARCHAR(100) NULL,   
-          two_phone VARCHAR(15) NULL,  
-          job VARCHAR(100) NULL,          
-          address VARCHAR (250) NULL,
-          notes VARCHAR (250) NULL,
-          PRIMARY KEY  (id)
-        );";
-
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
-
-        update_option('wpbc_db_version', $wpbc_db_version);
-    }
-}
-
-register_activation_hook(__FILE__, 'wpbc_install');
 
 
 function wpbc_install_data()
@@ -110,7 +41,6 @@ function wpbc_update_db_check()
 }
 
 add_action('plugins_loaded', 'wpbc_update_db_check');
-
 
 
 if (!class_exists('WP_List_Table')) {
@@ -147,16 +77,36 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     {
 
         $actions = array(
+            'add_code_postal' => sprintf('<a href="?page=assign_code_postal&id=%s">%s</a>', $item['id'], __('Assigner code postal','wpbc')),
             'edit' => sprintf('<a href="?page=contacts_form&id=%s">%s</a>', $item['id'], __('Edit', 'wpbc')),
             'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Delete', 'wpbc')),
         );
 
         return sprintf('%s %s',
-            $item['partenaire_nom'],
+            $item['name'],
             $this->row_actions($actions)
         );
     }
 
+    function add_code_postal($item)
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'partenaire'; 
+        $id = $item['id'];
+        $code_postal = $_POST['code_postal'];
+        $wpdb->insert($table_name, array(
+            'id' => $id,
+            'code_postal' => $code_postal,
+        ));
+        wp_redirect(admin_url('admin.php?page=wpbc_list_table_example'));
+    }
+
+    function column_code_postal($item)
+    {
+        return '<em>' . $item['code_postal'] . '</em>';
+    }
+
+   
 
     function column_cb($item)
     {
@@ -171,7 +121,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
         $columns = array(
             'cb' => '<input type="checkbox" />', 
             'name'      => __('Nom', 'wpbc'),
-            'numero_telephone'  => __('Numéro de téléphone', 'wpbc'),
+            'phone'  => __('Numéro de téléphone', 'wpbc'),
             'email'     => __('E-Mail', 'wpbc'),
             'siret'     => __('Siret', 'wpbc'),
             'code_postal'   => __('Code postal', 'wpbc'),
@@ -183,7 +133,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     {
         $sortable_columns = array(
             'name'      => array('name', true),
-            'numero_telephone'  => array('Numéro de téléphone', true),
+            'phone'  => array('Numéro de téléphone', true),
             'email'     => array('email', true),
             'siret'     => array('siret', true),
             'code_postal'   => array('code_postal', true),
@@ -233,7 +183,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
-        $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'partenaire_nom';
+        $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'name';
         $order = (isset($_REQUEST['order']) && in_array($_REQUEST['order'], array('asc', 'desc'))) ? $_REQUEST['order'] : 'asc';
 
 
@@ -254,6 +204,12 @@ function wpbc_admin_menu()
     add_submenu_page('Partenaire', __('Partenaire', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'wpbc_contacts_page_handler');
    
     add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'wpbc_contacts_form_page_handler');
+    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
+    add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
+
+    include_once(plugin_dir_path(__FILE__) . '/admin/add_code_postal.php');
+    add_code_postal();
+
 }
 
 add_action('admin_menu', 'wpbc_admin_menu');
@@ -263,7 +219,7 @@ function wpbc_validate_contact($item)
 {
     $messages = array();
 
-    if (empty($item['partenaire_nom'])) $messages[] = __('Name is required', 'wpbc');
+    if (empty($item['name'])) $messages[] = __('Le nom est obligatoire', 'wpbc');
     // if (empty($item['lastname'])) $messages[] = __('Last Name is required', 'wpbc');
     // if (!empty($item['email']) && !is_email($item['email'])) $messages[] = __('E-Mail is in wrong format', 'wpbc');
     // if(!empty($item['phone']) && !absint(intval($item['phone'])))  $messages[] = __('Phone can not be less than zero');
