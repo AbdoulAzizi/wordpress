@@ -12,6 +12,7 @@ Version: 1.7.2
 
 
 require plugin_dir_path( __FILE__ ) . 'wp-basic-crud.php';
+require plugin_dir_path( __FILE__ ) . 'code_postal.php';
 
 // function to create the DB / Options / Defaults					
 function partenaire_options_install() {
@@ -76,7 +77,7 @@ function wpbc_install()
         phone varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         siret varchar(255) NOT NULL,
-        code_postal varchar(255) NOT NULL,
+        -- code_postal varchar(255) NOT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";
 

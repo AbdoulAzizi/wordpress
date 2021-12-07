@@ -77,7 +77,8 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     {
 
         $actions = array(
-            'add_code_postal' => sprintf('<a href="?page=assign_code_postal&id=%s">%s</a>', $item['id'], __('Assigner code postal','wpbc')),
+            'list code postal' =>sprintf('<a href="?page=contacts_form_cp&id_partenaire=%s">%s</a>',  $item['id'],__('Liste code postal', 'wpbc')),
+            'add_code_postal' => sprintf('<a href="?page=form_cp&id_partenaire=%s">%s</a>',$item['id'],__('Ajouter Code postal','wpbc')),
             'edit' => sprintf('<a href="?page=contacts_form&id=%s">%s</a>', $item['id'], __('Edit', 'wpbc')),
             'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Delete', 'wpbc')),
         );
@@ -88,7 +89,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
         );
     }
 
-    function add_code_postal($item)
+    function add_cp($item)
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'partenaire'; 
@@ -124,7 +125,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
             'phone'  => __('Numéro de téléphone', 'wpbc'),
             'email'     => __('E-Mail', 'wpbc'),
             'siret'     => __('Siret', 'wpbc'),
-            'code_postal'   => __('Code postal', 'wpbc'),
+            // 'code_postal'   => __('Code postal', 'wpbc'),
         );
         return $columns;
     }
@@ -136,7 +137,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
             'phone'  => array('Numéro de téléphone', true),
             'email'     => array('email', true),
             'siret'     => array('siret', true),
-            'code_postal'   => array('code_postal', true),
+            // 'code_postal'   => array('code_postal', true),
         );
         return $sortable_columns;
     }
@@ -204,16 +205,14 @@ function wpbc_admin_menu()
     add_submenu_page('Partenaire', __('Partenaire', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'wpbc_contacts_page_handler');
    
     add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'wpbc_contacts_form_page_handler');
-    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
+    add_submenu_page('null', __('CP', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_cp', 'wpbc_contacts_form_page_handler_cp');
+    add_submenu_page('null', __('Assigner code postal', 'wpbc'), __('Assigner code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
+    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'contacts_form_cp', 'wpbc_contacts_page_handler_cp');
     add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
-
-    include_once(plugin_dir_path(__FILE__) . '/admin/add_code_postal.php');
-    add_code_postal();
 
 }
 
 add_action('admin_menu', 'wpbc_admin_menu');
-
 
 function wpbc_validate_contact($item)
 {

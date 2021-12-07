@@ -1,4 +1,5 @@
 <?php
+
 function wpbc_contacts_page_handler()
 {
     global $wpdb;
@@ -21,6 +22,7 @@ function wpbc_contacts_page_handler()
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
+        <input type="hidden" name="id" value="<?php echo $_REQUEST['id'] ?>"/>
         <?php $table->display() ?>
     </form>
 
@@ -32,6 +34,7 @@ function wpbc_contacts_page_handler()
  function add_code_postal_page()
  {
 
+    // var_dump($_REQUEST);exit;
      global $wpdb;
      $table_name = $wpdb->prefix . 'partenaire'; 
      $id = $_REQUEST['id'];
@@ -73,6 +76,12 @@ function wpbc_contacts_page_handler()
          </form>
      </div>
      <?php
+
+// var_dump(plugin_dir_path(__FILE__) . 'meta_cp.php');
+    // require_once plugin_dir_url('').'partenaire/code_postal.php';
+    // var_dump(plugin_dir_url('').'partenaire/code_postal.php');exit;
+    //  include_once plugin_dir_path(__FILE__) . 'meta_cp.php';
+    //  wpbc_contacts_page_handler1();
      
  }
 
@@ -93,7 +102,7 @@ function wpbc_contacts_form_page_handler()
         'phone'  => '',
         'email'     => '',
         'siret'     => '',
-        'code_postal'     => '',
+        // 'code_postal'     => '',
     );
 
 
@@ -205,14 +214,7 @@ function wpbc_contacts_form_meta_box_handler($item)
 			<input id="siret" name="siret" type="tel" value="<?php echo esc_attr($item['siret'])?>">
 		</p>
 		</div>
-		<div class="form2bc">
-			<p>
-            <label for="code_postal"><?php _e('Code postal', 'wpbc')?></label>
-		<br>	
-            <input id="code_postal" name="code_postal" type="text" value="<?php echo esc_attr($item['code_postal'])?>">
-        </p><p>	  
 			
-		</div>	
 		</form>
 		</div>
 </tbody>
