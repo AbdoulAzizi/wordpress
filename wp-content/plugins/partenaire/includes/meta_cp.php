@@ -170,7 +170,7 @@ function wpbc_contacts_form_page_handler_cp()
                 <div id="post-body-content">
                     
                     <?php do_meta_boxes('contact', 'normal', $item); ?>
-                    <input type="submit" value="<?php _e('Save', 'wpbc')?>" id="submit" class="button-primary" name="submit">
+                    <input type="submit" value="<?php _e('Assigner', 'wpbc')?>" id="submit" class="button-primary" name="submit">
                 </div>
             </div>
         </div>
@@ -188,7 +188,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
 	<div class="formdatabc">		
 		
         <form>
-            <h3> Choisirle le type d'assignation du code postal </h3>
+            <h3 style="color:#135e96"> Veullez choisir le le type d'assignation du code postal :</h3>
            <?php // liste des choix de type d'assignation avec un checkbox par type d'assignation ?>
             <div class="form-group">
                 <div class="form-check">

@@ -77,10 +77,10 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     {
 
         $actions = array(
-            'list code postal' =>sprintf('<a href="?page=contacts_form_cp&id_partenaire=%s">%s</a>',  $item['id'],__('Liste code postal', 'wpbc')),
-            'add_code_postal' => sprintf('<a href="?page=form_cp&id_partenaire=%s">%s</a>',$item['id'],__('Ajouter Code postal','wpbc')),
-            'edit' => sprintf('<a href="?page=contacts_form&id=%s">%s</a>', $item['id'], __('Edit', 'wpbc')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Delete', 'wpbc')),
+            'list code postal' =>sprintf('<a href="?page=contacts_form_cp&id_partenaire=%s">%s</a>',  $item['id'],__('Code postal', 'wpbc')),
+            'add_code_postal' => sprintf('<a href="?page=form_departement&id_partenaire=%s">%s</a>',$item['id'],__('Département','wpbc')),
+            'edit' => sprintf('<a href="?page=contacts_form&id=%s">%s</a>', $item['id'], __('Éditer', 'wpbc')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Supprimer', 'wpbc')),
         );
 
         return sprintf('%s %s',
@@ -209,6 +209,9 @@ function wpbc_admin_menu()
     add_submenu_page('null', __('Assigner code postal', 'wpbc'), __('Assigner code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
     add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'contacts_form_cp', 'wpbc_contacts_page_handler_cp');
     add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
+    add_submenu_page('partenaires', 'Liste des villes', 'Liste des villes', 8, 'liste_des_villes', 'wpbc_contacts_page_handler_villes');
+    add_submenu_page('null', __('CP', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_villes', 'form_page_handler_villes');
+
 
 }
 

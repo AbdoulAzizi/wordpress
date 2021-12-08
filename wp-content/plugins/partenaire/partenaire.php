@@ -13,6 +13,8 @@ Version: 1.7.2
 
 require plugin_dir_path( __FILE__ ) . 'wp-basic-crud.php';
 require plugin_dir_path( __FILE__ ) . 'code_postal.php';
+require plugin_dir_path( __FILE__ ) . 'villes.php';
+
 
 // function to create the DB / Options / Defaults					
 function partenaire_options_install() {
@@ -173,7 +175,7 @@ function partenaire_admin_liste_des_villes(){
 
     partenaire_import_csv();
     
-    echo "<h1> Importer le file CSV </h1>";
+    echo "<h1> Importer le fichier CSV </h1>";
     
     // form to import CSV file
     echo '<form action="' . $_SERVER['REQUEST_URI'] . '" method="post" enctype="multipart/form-data">';
