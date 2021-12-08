@@ -14,6 +14,7 @@ Version: 1.7.2
 require plugin_dir_path( __FILE__ ) . 'wp-basic-crud.php';
 require plugin_dir_path( __FILE__ ) . 'code_postal.php';
 require plugin_dir_path( __FILE__ ) . 'villes.php';
+require plugin_dir_path( __FILE__ ) . 'zone_cp.php';
 
 
 // function to create the DB / Options / Defaults					

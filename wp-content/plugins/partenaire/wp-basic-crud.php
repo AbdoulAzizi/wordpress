@@ -78,7 +78,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
 
         $actions = array(
             'list code postal' =>sprintf('<a href="?page=contacts_form_cp&id_partenaire=%s">%s</a>',  $item['id'],__('Code postal', 'wpbc')),
-            'add_code_postal' => sprintf('<a href="?page=form_departement&id_partenaire=%s">%s</a>',$item['id'],__('Département','wpbc')),
+            // 'add_code_postal' => sprintf('<a href="?page=form_departement&id_partenaire=%s">%s</a>',$item['id'],__('Département','wpbc')),
             'edit' => sprintf('<a href="?page=contacts_form&id=%s">%s</a>', $item['id'], __('Éditer', 'wpbc')),
             'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Supprimer', 'wpbc')),
         );
