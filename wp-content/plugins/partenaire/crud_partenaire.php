@@ -2,7 +2,7 @@
 
 defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
 
-require plugin_dir_path( __FILE__ ) . 'includes/metabox-p1.php';
+require plugin_dir_path( __FILE__ ) . 'includes/form_partenaire.php';
 
 function wpbc_custom_admin_styles() {
     wp_enqueue_style('custom-styles', plugins_url('/css/styles.css', __FILE__ ));

@@ -11,59 +11,24 @@ Version: 1.7.2
 */
 
 
-require plugin_dir_path( __FILE__ ) . 'wp-basic-crud.php';
-require plugin_dir_path( __FILE__ ) . 'code_postal.php';
-require plugin_dir_path( __FILE__ ) . 'villes.php';
+require plugin_dir_path( __FILE__ ) . 'crud_partenaire.php';
+require plugin_dir_path( __FILE__ ) . 'crud_code_postal.php';
+require plugin_dir_path( __FILE__ ) . 'crud_villes.php';
 require plugin_dir_path( __FILE__ ) . 'zone_cp.php';
+require plugin_dir_path( __FILE__ ) . 'zone_departement.php';
 
 
-// function to create the DB / Options / Defaults					
-function partenaire_options_install() {
-    // insert data from CSV file
-    
-    // $csv_file = plugin_dir_path( __FILE__ ) . 'partenaire.csv';
-    // $csv_file = fopen( $csv_file, 'r' );
-    // $csv_data = fgetcsv( $csv_file, 0, ';' );
-    // while ( ( $csv_data = fgetcsv( $csv_file, 0, ';' ) ) !== FALSE ) {
-
-    //       // skip the first line
-    //       if ( $line[0] == 'Code_commune_INSEE' ) {
-    //         continue;
-    //     }
-
-    //     $wpdb->insert( $table_name, array(
-    //         'Code_commune_INSEE' => $csv_data[0],
-    //         'Nom_commune' => $csv_data[1],
-    //         'Code_postal' => $csv_data[2],
-    //         'Ligne_5' => $csv_data[3],
-    //         'Libelle_d_acheminement' => $csv_data[4],
-    //         // 'coordonnees_gps' => $csv_data[5],
-    //         // 'code_commune_etrangere' => $csv_data[6]
-    //     ) );
-    // }
-    // fclose( $csv_file );
-    
- 
-}
-// run the install scripts upon plugin activation
-// register_activation_hook(__FILE__,'partenaire_options_install');
-
-
-function wpbc_install()
+function partenaire_options_install()
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . "villes_france";
+    $villes_table_name = $wpdb->prefix . "villes_france";
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE $table_name (
+    $sql = "CREATE TABLE $villes_table_name (
         id int(11) NOT NULL AUTO_INCREMENT,
         Code_commune_INSEE int(11) NULL,
         Nom_commune varchar(255) NOT NULL,
         Code_postal varchar(255)  NULL,
-        Ligne_5 varchar(255) NULL,
-        Libelle_d_acheminement varchar(255) NULL,
-        -- coordonnees_gps varchar(255) NOT NULL,
-        -- code_commune_etrangere varchar(255) NOT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";
 
@@ -80,7 +45,6 @@ function wpbc_install()
         phone varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         siret varchar(255) NOT NULL,
-        -- code_postal varchar(255) NOT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";
 
@@ -101,18 +65,45 @@ function wpbc_install()
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
 
+    // import data from CSV file when plugin is activated
+    // vérifier si la table est vide
+    $count = $wpdb->get_var( "SELECT COUNT(*) FROM $villes_table_name" );
+    if ( $count == 0 ) {
+        $csv_file = plugin_dir_path( __FILE__ ) . 'public/files/villes_france.csv';
+        $csv_file = fopen( $csv_file, 'r' );
+        while ( ( $csv_data = fgetcsv( $csv_file, 0, ';' ) ) !== FALSE ) {
+
+            // skip the first line
+            if ( $line[0] == 'Code_commune_INSEE' ) {
+                continue;
+            }
+            // vérifier si la ville existe déjà
+            // $count = $wpdb->get_var( "SELECT COUNT(*) FROM $villes_table_name WHERE Code_commune_INSEE = '$csv_data[0]'" );
+            // if ( $count == 0 ) {
+                $wpdb->insert(
+                    $villes_table_name,
+                    array(
+                        'Code_commune_INSEE' => $csv_data[0],
+                        'Nom_commune' => $csv_data[1],
+                        'Code_postal' => $csv_data[2],
+                    )
+                );
+            // }
+
+        }
+        fclose( $csv_file );
+    }
+
    
 }
-
-register_activation_hook(__FILE__, 'wpbc_install');
+// run the install scripts upon plugin activation
+register_activation_hook(__FILE__, 'partenaire_options_install');
 
 
 /**
  * Deactivation hook.
  */
 function partenaire_options_deactivate() {
-    // Unregister the post type, so the rules are no longer in memory.
-    // unregister_post_type( 'book' );
 
     // Clear the permalinks to remove our post type's rules from the database.
     flush_rewrite_rules();
@@ -128,25 +119,6 @@ add_action( 'wp_enqueue_scripts', 'partenaire_bootstrap_css' );
 function partenaire_public_css() {
     wp_enqueue_style( 'partenaire-public-css', plugin_dir_url( __FILE__ ) . 'public/css/partenaire.css' );
 }
-
-wp_enqueue_script( 'bootstrap-js', plugins_url( '/bootstrap/js/bootstrap.min.js', __FILE__ ), array( 'jquery' ), null, true );
-wp_enqueue_style( 'bootstrap-css',plugins_url( '/bootstrap/css/bootstrap.min.css', __FILE__ ) );
-
-add_action( 'wp_enqueue_scripts', 'partenaire_public_css' );
-// add_action('admin_menu', 'partenaire_plugin_setup_menu');
-// add_action('admin_menu', 'partenaire');
- 
-
-// function partenaire_menu() {
-//     add_menu_page('Partenaire', 'Partenaire', 'manage_options', __FILE__, 'main_partenaire', plugins_url('MyPluginFolder/images/icon.png') );
-//     add_submenu_page(__FILE__, 'Liste des partenaires', 'Liste des partenaires', 'manage_options', 'partenaire', 'partenaire_admin_liste_des_partenaires');
-//     add_submenu_page(__FILE__, 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
-// }
-// add_action('admin_menu', 'partenaire_menu');
-
-// function partenaire_plugin_setup_menu(){
-//     add_menu_page( 'Page des partenaires', 'Importer des villes', 'manage_options', 'aprtenaire-plugin', 'partenaire_admin_liste_des_villes' );
-// }
 
 function partenaire_admin_liste_des_partenaires() {
     
@@ -237,23 +209,6 @@ function partenaire_import_csv() {
     }
 }
 
-// register_post_type( 'partenaire',
-//     array(
-//         'labels' => array(
-//             'name' => __( 'Partenaires' ),
-//             'singular_name' => __( 'Partenaire' )
-//         ),
-//         'public' => true,
-//         'has_archive' => true,
-//         'rewrite' => array('slug' => 'partenaire'),
-//         'supports' => array( 'title', 'editor', 'thumbnail', 'excerpt', 'comments', 'custom-fields', 'page-attributes', 'post-formats', 'thumbnail' ),
-//         'taxonomies' => array( 'category', 'post_tag' ),
-//         'menu_icon' => 'dashicons-groups',
-//         'menu_position' => 5,
-//         'show_in_rest' => true,
-//     )
-// );
-
 
 // function to display the custom post type
 function partenaire_display_post_type() {
@@ -289,16 +244,16 @@ function partenaire_display_post_type() {
 register_deactivation_hook( __FILE__, 'partenaire_options_deactivate' );
 
 function partenaire_options_uninstall() {
-    // delete the post type
-    // unregister_post_type( 'book' );
-    // drop a custom database table
+    
     global $wpdb;
-    $table_name = $wpdb->prefix . "villes_france";
-    $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
+
+    // drop villes table if it exists
+    $villes_table_name = $wpdb->prefix . "villes_france";
+    $wpdb->query("DROP TABLE IF EXISTS {$villes_table_name}");
 
     // drop partenaire table if exists
-    $table_name = $wpdb->prefix . "partenaire";
-    $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
+    $partenaire_table_name = $wpdb->prefix . "partenaire";
+    $wpdb->query("DROP TABLE IF EXISTS {$partenaire_table_name}");
 }
 
 register_uninstall_hook(__FILE__, 'partenaire_options_uninstall');
