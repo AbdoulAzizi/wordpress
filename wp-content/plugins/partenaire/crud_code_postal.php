@@ -68,11 +68,11 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
         $actions = array(
             // 'cp' => sprintf('<a href="?page=form_cp&id=%s">%s</a>', $item['id'], __('cp', 'wpbc')),
             'edit' => sprintf('<a href="?page=form_cp&id=%s&id_partenaire=%s">%s</a>', $item['id'],$_REQUEST['id_partenaire'], __('Éditer', 'wpbc')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Supprimer', 'wpbc')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id'], $_REQUEST['id_partenaire'], __('Supprimer', 'wpbc')),
         );
 
         return sprintf('%s %s',
-            $item['id'],
+            $item['code_postal'],
             $this->row_actions($actions)
         );
     }
@@ -90,9 +90,7 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
     {
         $columns = array(
             'cb' => '<input type="checkbox" />', 
-            'name'      => __('Numéro', 'wpbc'),
-            'code_postal'      => __('Code postal', 'wpbc'),
-            
+            'name'      => __('Code postal', 'wpbc'),            
         );
         return $columns;
     }
@@ -100,9 +98,7 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
     function get_sortable_columns()
     {
         $sortable_columns = array(
-            'name'      => array('Partenaire', true),
-            'code_postal'      => array('Code postal', true),
-            
+            'name'      => array('Code postal', true),            
         );
         return $sortable_columns;
     }
@@ -166,32 +162,11 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
     }
 }
 
-// function wpbc_admin_menu()
-// {
-//     add_menu_page(__('Partenaire', 'wpbc'), __('Partenaire', 'wpbc'), 'activate_plugins', 'partenaires', 'wpbc_contacts_page_handler');
-//     add_submenu_page('Partenaire', __('Partenaire', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'wpbc_contacts_page_handler');
-   
-//     add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'wpbc_contacts_form_page_handler');
-//     add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
-//     add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
-
-//     include_once(plugin_dir_path(__FILE__) . '/admin/add_code_postal.php');
-//     add_code_postal();
-
-// }
-
-// add_action('admin_menu', 'wpbc_admin_menu');
-
-
-function wpbc_validate_contact_cp($item)
+function form_validate_code_postal($item)
 {
     $messages = array();
 
-    if (empty($item['code_postal'])) $messages[] = __('Le nom est obligatoire', 'wpbc');
-    // if (empty($item['lastname'])) $messages[] = __('Last Name is required', 'wpbc');
-    // if (!empty($item['email']) && !is_email($item['email'])) $messages[] = __('E-Mail is in wrong format', 'wpbc');
-    // if(!empty($item['phone']) && !absint(intval($item['phone'])))  $messages[] = __('Phone can not be less than zero');
-    // if(!empty($item['phone']) && !preg_match('/[0-9]+/', $item['phone'])) $messages[] = __('Phone must be number');
+    if (empty($item['code_postal'])) $messages[] = __('Le champ code postal est obligatoire.', 'wpbc');
     
 
     if (empty($messages)) return true;

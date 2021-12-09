@@ -36,7 +36,7 @@ function wpbc_contacts_page_handler_villes()
                 if ($result) {
                     $message = __('Ville mise à jour avec succès.', 'wpbc');
                 } else {
-                    $notice = __('Erreur lors de la mise à jour de la ville.', 'wpbc');
+                    $notice = __('Aucune modification n\'a été apportée.', 'wpbc');
                 }
             }
         } else {
@@ -51,7 +51,7 @@ function wpbc_contacts_page_handler_villes()
             $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
             if (!$item) {
                 $item = $default;
-                $notice = __('Item not found', 'wpbc');
+                // $notice = __('Aucune ville trouvée.', 'wpbc');
             }
         }
     }
@@ -61,18 +61,16 @@ function wpbc_contacts_page_handler_villes()
 
     // $message = '';
     if ('delete' === $table->current_action()) {
-        $message = '<p>' . sprintf(__('Nombre d\'enregistrement (s) supprimé (s): %d', 'wpbc'), count($_REQUEST['id'])) . '</p>';
+        $message = ( count($_REQUEST['id'])).' '.__('Ville (s) supprimée (s) avec succès', 'wpbc');
     }
     ?>
 <div class="wrap">
 
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-    <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
-                                 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=form_villes');?>"><?php _e('Nouvelle ville', 'wpbc')?></a>
-    </h2>
+        <h2>
+            <?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=form_villes');?>"><?php _e('Nouvelle ville', 'wpbc')?></a>
+        </h2>
     
-   
-
     <?php if (!empty($notice)): ?>
     <div id="notice" class="error"><p><?php echo $notice ?></p></div>
     <?php endif;?>
@@ -99,6 +97,13 @@ function form_page_handler_villes()
     $message = '';
     $notice = '';
 
+
+    $default = array(
+        'id' => 0,
+        'Code_commune_INSEE'      => '',
+        'Nom_commune'  => '',
+        'Code_postal'     => '',
+    );
 
    
     $item = $default;

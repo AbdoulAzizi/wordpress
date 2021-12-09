@@ -1,14 +1,13 @@
 <?php
 
-// Add custom Slider ID field to 'Edit Page'
 add_action( 'add_meta_boxes', 'meta_box_add_departement' );
 function meta_box_add_departement() {
-    add_meta_box( 'meta_box_departement', 'Méta Département', 'meta_box_departement', 'page', 'side', 'high' );
+    add_meta_box( 'meta_box_departement', 'Département', 'meta_box_departement', 'page', 'side', 'high' );
 }
 function meta_box_departement( $post ) {
     $values = get_post_custom( $post->ID );
     $text = isset( $values['meta_box_text_departement'] ) ? esc_attr( $values['meta_box_text_departement'][0] ) : '';
-    wp_nonce_field( 'my_meta_box_nonce_department', 'meta_box_nonce_departement' );
+    wp_nonce_field( 'meta_box_nonce_department', 'meta_box_nonce_departement' );
     ?>
     <p>
         <label for="meta_box_text_departement">Département</label>
@@ -21,7 +20,7 @@ function departemnt_meta_box_save( $post_id ) {
     // Bail if we're doing an auto save
     if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
     // if our nonce isn't there, or we can't verify it, bail
-    if( !isset( $_POST['meta_box_nonce_departement'] ) || !wp_verify_nonce( $_POST['meta_box_nonce_departement'], 'my_meta_box_nonce_department' ) ) return;
+    if( !isset( $_POST['meta_box_nonce_departement'] ) || !wp_verify_nonce( $_POST['meta_box_nonce_departement'], 'meta_box_nonce_department' ) ) return;
     // if our current user can't edit this post, bail
     if( !current_user_can( 'edit_post', $post_id ) ) return;
     // now we can actually save the data
@@ -34,5 +33,3 @@ function departemnt_meta_box_save( $post_id ) {
     if( isset( $_POST['meta_box_text_departement'] ) )
         update_post_meta( $post_id, 'meta_box_text_departement', wp_kses( $_POST['meta_box_text_departement'], $allowed ) );
 }
-
-// echo do_shortcode( '[cycloneslider id="' . get_post_meta(get_the_ID(), 'meta_box_text_departement', true) . '"]');

@@ -1,5 +1,5 @@
 div#contacts_form_meta_box.postbox {
-    width: 60%;
+    width: auto;
 }
 
 div.form2bc {
@@ -11,7 +11,11 @@ div.form3bc {
 }
 
 div.form2bc input {
-    width: 350px;
+    width: 100%;
+    margin-right: 30px;
+}
+
+div.form2bc p {
     margin-right: 30px;
 }
 

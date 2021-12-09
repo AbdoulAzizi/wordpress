@@ -4,12 +4,67 @@ function wpbc_contacts_page_handler()
 {
     global $wpdb;
 
+    $table_name = $wpdb->prefix . 'partenaire'; 
+
+    $message = '';
+    $notice = '';
+
+
+    $default = array(
+        'id' => 0,
+        'name'      => '',
+        'phone'  => '',
+        'email'     => '',
+        'siret'     => '',
+        // 'code_postal'     => '',
+    );
+
+
+    if ( isset($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], basename(__FILE__))) {
+        
+        $item = shortcode_atts($default, $_REQUEST);     
+
+        $item_valid = wpbc_validate_contact($item);
+        if ($item_valid === true) {
+            if ($item['id'] == 0) {
+                $result = $wpdb->insert($table_name, $item);
+                $item['id'] = $wpdb->insert_id;
+                if ($result) {
+                    $message = __('Partenaire ajouté avec succès.', 'wpbc');
+                } else {
+                    $notice = __('Erreur lors de l\'ajout du partenaire.', 'wpbc');
+                }
+            } else {
+                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
+                if ($result) {
+                    $message = __('Partenaire mis à jour avec succès.', 'wpbc');
+                } else {
+                    $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
+                }
+            }
+        } else {
+            
+            $notice = $item_valid;
+        }
+    }else {
+        
+        $item = $default;
+        if (isset($_REQUEST['id'])) {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+            if (!$item) {
+                $item = $default;
+                $notice = __('Aucun partenaire trouvé.', 'wpbc');
+            }
+        }
+    }
+
+
     $table = new Custom_Table_Example_List_Table();
     $table->prepare_items();
 
-    $message = '';
+    // $message = '';
     if ('delete' === $table->current_action()) {
-        $message = '<div class="updated below-h2" id="message"><p>' . sprintf(__('Nombre d\'enregistrement (s) supprimé (s): %d', 'wpbc'), count($_REQUEST['id'])) . '</p></div>';
+        $message = ( count($_REQUEST['id'])).' '.__('partenaire(s) supprimé(s) avec succès.', 'wpbc');
     }
     ?>
 <div class="wrap">
@@ -18,7 +73,13 @@ function wpbc_contacts_page_handler()
     <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
                                  href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=contacts_form');?>"><?php _e('Nouveau partenaire', 'wpbc')?></a>
     </h2>
-    <?php echo $message; ?>
+
+    <?php if (!empty($notice)): ?>
+    <div id="notice" class="error"><p><?php echo $notice ?></p></div>
+    <?php endif;?>
+    <?php if (!empty($message)): ?>
+    <div id="message" class="updated"><p><?php echo $message ?></p></div>
+    <?php endif;?>
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
@@ -90,6 +151,7 @@ function wpbc_contacts_page_handler()
 function wpbc_contacts_form_page_handler()
 {
     global $wpdb;
+
     $table_name = $wpdb->prefix . 'partenaire'; 
 
     $message = '';
@@ -104,36 +166,8 @@ function wpbc_contacts_form_page_handler()
         'siret'     => '',
         // 'code_postal'     => '',
     );
-
-
-    if ( isset($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], basename(__FILE__))) {
-        
-        $item = shortcode_atts($default, $_REQUEST);     
-
-        $item_valid = wpbc_validate_contact($item);
-        if ($item_valid === true) {
-            if ($item['id'] == 0) {
-                $result = $wpdb->insert($table_name, $item);
-                $item['id'] = $wpdb->insert_id;
-                if ($result) {
-                    $message = __('Item was successfully saved', 'wpbc');
-                } else {
-                    $notice = __('There was an error while saving item', 'wpbc');
-                }
-            } else {
-                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
-                if ($result) {
-                    $message = __('Item was successfully updated', 'wpbc');
-                } else {
-                    $notice = __('There was an error while updating item', 'wpbc');
-                }
-            }
-        } else {
-            
-            $notice = $item_valid;
-        }
-    }
-    else {
+    
+    
         
         $item = $default;
         if (isset($_REQUEST['id'])) {
@@ -143,7 +177,7 @@ function wpbc_contacts_form_page_handler()
                 $notice = __('Item not found', 'wpbc');
             }
         }
-    }
+    
 
     
     add_meta_box('contacts_form_meta_box', __('Coordonnées du partenaire', 'wpbc'), 'wpbc_contacts_form_meta_box_handler', 'contact', 'normal', 'default');
@@ -155,14 +189,7 @@ function wpbc_contacts_form_page_handler()
                                 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>"><?php _e('Retour à la liste', 'wpbc')?></a>
     </h2>
 
-    <?php if (!empty($notice)): ?>
-    <div id="notice" class="error"><p><?php echo $notice ?></p></div>
-    <?php endif;?>
-    <?php if (!empty($message)): ?>
-    <div id="message" class="updated"><p><?php echo $message ?></p></div>
-    <?php endif;?>
-
-    <form id="form" method="POST">
+    <form id="form" method="POST" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>" enctype="multipart/form-data">
         <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
         
         <input type="hidden" name="id" value="<?php echo $item['id'] ?>"/>
@@ -172,7 +199,7 @@ function wpbc_contacts_form_page_handler()
                 <div id="post-body-content">
                     
                     <?php do_meta_boxes('contact', 'normal', $item); ?>
-                    <input type="submit" value="<?php _e('Save', 'wpbc')?>" id="submit" class="button-primary" name="submit">
+                    <input type="submit" value="<?php _e('Enregistrer', 'wpbc')?>" id="submit" class="button-primary" name="submit">
                 </div>
             </div>
         </div>
@@ -195,7 +222,10 @@ function wpbc_contacts_form_meta_box_handler($item)
 		<br>	
             <input id="name" name="name" type="text" value="<?php echo esc_attr($item['name'])?>"
                     required>
-		</p><p>	
+		</p>
+        </div>	
+		<div class="form2bc">
+        <p>	
             <label for="phone"><?php _e('Numero de telephone', 'wpbc')?></label>
 		<br>
 		    <input id="phone" name="phone" type="text" value="<?php echo esc_attr($item['phone'])?>"
@@ -208,7 +238,10 @@ function wpbc_contacts_form_meta_box_handler($item)
 		<br>	
             <input id="email" name="email" type="email" value="<?php echo esc_attr($item['email'])?>"
                    required>
-        </p><p>	  
+        </p>
+        </div>	
+		<div class="form2bc">
+        <p>	  
             <label for="siret"><?php _e('Siret', 'wpbc')?></label>
 		<br>
 			<input id="siret" name="siret" type="tel" value="<?php echo esc_attr($item['siret'])?>">
