@@ -73,7 +73,6 @@ function wpbc_contacts_form_page_handler_cp()
 
         $item_valid = form_validate_code_postal($item);
 
-       
 
         if ($item_valid === true) {
             if ($item['id'] == 0) {
@@ -96,22 +95,44 @@ function wpbc_contacts_form_page_handler_cp()
                         // vérifier si le code postal ne contient pas de virgule, dash ou espace
                         if (strpos($item['code_postal'], ',') !== false || strpos($item['code_postal'], '-') !== false || strpos($item['code_postal'], ' ') !== false) {
                             $notice_code_postal = __('Vous avez choisi le type d\'assignation par défaut, veuillez ne pas utiliser de virgule, de tiret ou d\'espace dans le code postal', 'wpbc');
-                        }else{
+                        }elseif(strlen($item['code_postal']) > 6){
+                            $notice_code_postal = __('le code postal doit contenir au maximum 6 caractères', 'wpbc');
+                        }
+                      
+                        // vérifier le code postal ne contient pas de caractères spéciaux
+                        elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
+                            $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                        }else {
                             $result = $wpdb->insert($table_name, $item);
                             $item['id'] = $wpdb->insert_id;
+                            
                         }
+                       
+                        
                     
                     }elseif ($type_assignation == 'cp_virgule') {
                         // vérifier si le code postal contient une virgule
                         if (strpos($item['code_postal'], ',') !== false) {
-                           
+                           $ok = true;
                             $cp_virgule = explode(',', $_REQUEST['code_postal']);
                             $rows = array();
                             foreach ($cp_virgule as $key => $value) {
+                                if (strlen($value) > 6) {
+                                    $notice_code_postal = __('chaque code postal doit contenir au maximum 6 caractères', 'wpbc');
+                                    $ok = false;
+                                } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
+                                    $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                                }
+                                else{
                                 $item['code_postal'] = $value;
                                 $rows[] = $item;
+                                }
                             }
-                            $result = wp_insert_rows($rows, $table_name);
+                            if ($ok) {
+                                $result = wp_insert_rows($rows, $table_name);
+                            }else{
+                                $item['code_postal'] = $_REQUEST['code_postal'];
+                            }
                         }elseif (strpos($item['code_postal'], '-') !== false) {
                                 $notice_code_postal = __('Vous avez choisi le type d\'assignation par séparateur de virgule, veuillez ne pas utiliser de tiret dans le code postal', 'wpbc');
                             }elseif (strpos($item['code_postal'], ' ') !== false) {
@@ -128,12 +149,19 @@ function wpbc_contacts_form_page_handler_cp()
                             $cp_tranche_debut = $cp_tranche[0];
                             $cp_tranche_fin = $cp_tranche[1];
                             $rows = array();
+                            if (strlen($cp_tranche_debut) > 6 || strlen($cp_tranche_fin) > 6) {
+                                $notice_code_postal = __('chaque code postal doit contenir au maximum 6 caractères', 'wpbc');
+                            } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
+                                $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                            }
+                            else{
 
                             for ($i=$cp_tranche_debut; $i <= $cp_tranche_fin; $i++) { 
                                 $item['code_postal'] = $i;
                                 $rows[] = $item;
                             }
                             $result = wp_insert_rows($rows, $table_name);
+                            }
                         }elseif (strpos($item['code_postal'], ',') !== false) {
                             $notice_code_postal = __('Vous avez choisi le type d\'assignation par tranche, veuillez ne pas utiliser de virgule dans le code postal', 'wpbc');
                     
@@ -155,11 +183,12 @@ function wpbc_contacts_form_page_handler_cp()
                         }elseif (strlen($cp_departement) == 6){
                             $cp_departement = substr($code_postal, 0, 3);
                         
-                        }else{
-                            $cp_departement = substr($code_postal, 0, 2);
-                        }                       
+                        }elseif (strlen($cp_departement) > 6){
+                            $notice_code_postal = __('le code postal doit contenir au maximum 6 caractères', 'wpbc');
+                        } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
+                            $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                        }
                        
-                            
                         // vérifier si le code postal contient une virgule
                         if (strpos($item['code_postal'], ',') !== false) {
                             $notice_code_postal = __('Vous avez choisi le type d\'assignation par département, veuillez ne pas utiliser de virgule dans le code postal', 'wpbc');
