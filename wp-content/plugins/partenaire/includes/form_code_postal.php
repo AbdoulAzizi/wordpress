@@ -7,106 +7,13 @@ function wpbc_contacts_page_handler_cp()
     $table->prepare_items();
 
     $table_name = $wpdb->prefix . 'code_postal'; 
+    // var_dump($_REQUEST);
 
-    $message = '';
+    $message = $_REQUEST['success_create_message'] ?? '';
+    
     $notice = '';
     $partenaire_id = $_REQUEST['id_partenaiire'];
     // var_dump($partenaire_id);
-
-    $default = array(
-        'id' => 0,
-        'code_postal'     => '',
-        'partenaire_id' => $partenaire_id,
-    );
-
-    if ( isset($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], basename(__FILE__))) {
-        
-        $item = shortcode_atts($default, $_REQUEST);     
-
-        $item_valid = form_validate_code_postal($item);
-        if ($item_valid === true) {
-            if ($item['id'] == 0) {
-                // $result = $wpdb->insert($table_name, $item);
-                // $item['id'] = $wpdb->insert_id;
-
-                // var_dump($_REQUEST); exit;
-
-                // vérifier si l'un des button radio est coché
-                if(! isset($_REQUEST['type_assignation'])){
-                    $notice_type_assignation = __('Veuillez choisir le type d\'assignation', 'wpbc');
-                }else{
-                    $type_assignation = $_REQUEST['type_assignation'];
-
-                    // veriifer le type d'assignation du code postal selon le button radio choisi
-                    if ($type_assignation == 'default') {
-                        // echo '<script>alert("Vous avez choisi l\'assignation par défaut");</script>';
-                        $result = $wpdb->insert($table_name, $item);
-                        $item['id'] = $wpdb->insert_id;
-                    }elseif ($type_assignation == 'cp_virgule') {
-                        $cp_virgule = explode(',', $_REQUEST['code_postal']);
-                        $rows = array();
-                        foreach ($cp_virgule as $key => $value) {
-                            $item['code_postal'] = $value;
-                            $rows[] = $item;
-                        }
-                        $result = wp_insert_rows($rows, $table_name);
-                    }elseif ($type_assignation == 'cp_tranche') {
-                        $cp_tranche = explode('-', $_REQUEST['code_postal']);
-                        $cp_tranche_debut = $cp_tranche[0];
-                        $cp_tranche_fin = $cp_tranche[1];
-                        $rows = array();
-
-                        for ($i=$cp_tranche_debut; $i <= $cp_tranche_fin; $i++) { 
-                            $item['code_postal'] = $i;
-                            $rows[] = $item;
-                        }
-                        $result = wp_insert_rows($rows, $table_name);
-                    }elseif ($type_assignation == 'cp_departement') {
-                        $cp_departement =  $_REQUEST['code_postal'];
-                        $numero_departement = substr($cp_departement, 0, 2);                   
-                        $item['code_postal'] = $numero_departement;
-                        $result = $wpdb->insert($table_name, $item);
-                        $item['id'] = $wpdb->insert_id;
-                    }
-                }
-                
-               
-               
-
-                
-                if ($result) {
-                    $message = __('Code postal ajouté avec succès.', 'wpbc');
-                } else {
-                    if($notice_type_assignation){
-                        $notice = $notice_type_assignation;
-                    }else{
-                    $notice = __('Erreur lors de l\'ajout du code postal.', 'wpbc');
-                    }
-                }
-            } else {
-                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
-                if ($result) {
-                    $message = __('Code postal mis à jour avec succès.', 'wpbc');
-                } else {
-                    $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
-                }
-            }
-        } else {
-            
-            $notice = $item_valid;
-        }
-    }
-    else {
-        
-        $item = $default;
-        if (isset($_REQUEST['id'])) {
-            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
-            if (!$item) {
-                $item = $default;
-                // $notice = __('Aucun code postal trouvé.', 'wpbc');
-            }
-        }
-    }
 
     // var_dump( $_REQUEST);exit;
 
@@ -124,7 +31,7 @@ function wpbc_contacts_page_handler_cp()
     </h2>
     <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>"><?php _e('Voir la liste des partenaires', 'wpbc')?></a>
     <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=form_cp&id_partenaire='.$_REQUEST['id_partenaire'])?>"><?php _e('Assigner Code postal', 'wpbc')?></a>
-
+    
     <?php if (!empty($notice)): ?>
     <div id="notice" class="error"><p><?php echo $notice ?></p></div>
     <?php endif;?>
@@ -152,8 +59,7 @@ function wpbc_contacts_form_page_handler_cp()
 
     $message = '';
     $notice = '';
-    $partenaire_id = $_REQUEST['id_partenaiire'];
-    // var_dump($partenaire_id);
+    $partenaire_id = $_REQUEST['id_partenaire'];
 
     $default = array(
         'id' => 0,
@@ -166,6 +72,9 @@ function wpbc_contacts_form_page_handler_cp()
         $item = shortcode_atts($default, $_REQUEST);     
 
         $item_valid = form_validate_code_postal($item);
+
+       
+
         if ($item_valid === true) {
             if ($item['id'] == 0) {
                 // $result = $wpdb->insert($table_name, $item);
@@ -179,52 +88,115 @@ function wpbc_contacts_form_page_handler_cp()
                 }else{
                     $type_assignation = $_REQUEST['type_assignation'];
 
+                    // gestion des erreurs
+
+
                     // veriifer le type d'assignation du code postal selon le button radio choisi
                     if ($type_assignation == 'default') {
-                        // echo '<script>alert("Vous avez choisi l\'assignation par défaut");</script>';
-                        $result = $wpdb->insert($table_name, $item);
-                        $item['id'] = $wpdb->insert_id;
+                        // vérifier si le code postal ne contient pas de virgule, dash ou espace
+                        if (strpos($item['code_postal'], ',') !== false || strpos($item['code_postal'], '-') !== false || strpos($item['code_postal'], ' ') !== false) {
+                            $notice_code_postal = __('Vous avez choisi le type d\'assignation par défaut, veuillez ne pas utiliser de virgule, de tiret ou d\'espace dans le code postal', 'wpbc');
+                        }else{
+                            $result = $wpdb->insert($table_name, $item);
+                            $item['id'] = $wpdb->insert_id;
+                        }
+                    
                     }elseif ($type_assignation == 'cp_virgule') {
-                        $cp_virgule = explode(',', $_REQUEST['code_postal']);
-                        $rows = array();
-                        foreach ($cp_virgule as $key => $value) {
-                            $item['code_postal'] = $value;
-                            $rows[] = $item;
-                        }
-                        $result = wp_insert_rows($rows, $table_name);
+                        // vérifier si le code postal contient une virgule
+                        if (strpos($item['code_postal'], ',') !== false) {
+                           
+                            $cp_virgule = explode(',', $_REQUEST['code_postal']);
+                            $rows = array();
+                            foreach ($cp_virgule as $key => $value) {
+                                $item['code_postal'] = $value;
+                                $rows[] = $item;
+                            }
+                            $result = wp_insert_rows($rows, $table_name);
+                        }elseif (strpos($item['code_postal'], '-') !== false) {
+                                $notice_code_postal = __('Vous avez choisi le type d\'assignation par séparateur de virgule, veuillez ne pas utiliser de tiret dans le code postal', 'wpbc');
+                            }elseif (strpos($item['code_postal'], ' ') !== false) {
+                                $notice_code_postal = __('Vous avez choisi le type d\'assignation par séparateur de virgule, veuillez ne pas utiliser d\'espace dans le code postal', 'wpbc');
+                            }else{
+                                $notice_code_postal = __('Vous avez choisi le type d\'assignation par séparateur de virgule, veuillez utiliser une virgule pour séparer les codes postaux', 'wpbc');
+                            }
                     }elseif ($type_assignation == 'cp_tranche') {
-                        $cp_tranche = explode('-', $_REQUEST['code_postal']);
-                        $cp_tranche_debut = $cp_tranche[0];
-                        $cp_tranche_fin = $cp_tranche[1];
-                        $rows = array();
 
-                        for ($i=$cp_tranche_debut; $i <= $cp_tranche_fin; $i++) { 
-                            $item['code_postal'] = $i;
-                            $rows[] = $item;
+                        
+                        if (strpos($item['code_postal'], '-') !== false) {
+        
+                            $cp_tranche = explode('-', $_REQUEST['code_postal']);
+                            $cp_tranche_debut = $cp_tranche[0];
+                            $cp_tranche_fin = $cp_tranche[1];
+                            $rows = array();
+
+                            for ($i=$cp_tranche_debut; $i <= $cp_tranche_fin; $i++) { 
+                                $item['code_postal'] = $i;
+                                $rows[] = $item;
+                            }
+                            $result = wp_insert_rows($rows, $table_name);
+                        }elseif (strpos($item['code_postal'], ',') !== false) {
+                            $notice_code_postal = __('Vous avez choisi le type d\'assignation par tranche, veuillez ne pas utiliser de virgule dans le code postal', 'wpbc');
+                    
+                        }elseif (strpos($item['code_postal'], ' ') !== false) {
+                            $notice_code_postal = __('Vous avez choisi le type d\'assignation par tranche, veuillez ne pas utiliser d\'espace dans le code postal', 'wpbc');
                         }
-                        $result = wp_insert_rows($rows, $table_name);
+                        else{
+                                $notice_code_postal = __('Vous avez choisi le type d\'assignation par tranche, veuillez utiliser un tiret pour séparer les codes postaux', 'wpbc');
+                            }
+                        
                     }elseif ($type_assignation == 'cp_departement') {
-                        $cp_departement =  $_REQUEST['code_postal'];
-                        $numero_departement = substr($cp_departement, 0, 2);                   
-                        $item['code_postal'] = $numero_departement;
-                        $result = $wpdb->insert($table_name, $item);
-                        $item['id'] = $wpdb->insert_id;
+
+                        $cp_departement ='';
+                        $code_postal =  $_REQUEST['code_postal'];
+                        // vérifier la taille du code postal
+                        if (strlen($cp_departement) == 5){
+
+                            $cp_departement = substr($code_postal, 0, 2);
+                        }elseif (strlen($cp_departement) == 6){
+                            $cp_departement = substr($code_postal, 0, 3);
+                        
+                        }else{
+                            $cp_departement = substr($code_postal, 0, 2);
+                        }                       
+                       
+                            
+                        // vérifier si le code postal contient une virgule
+                        if (strpos($item['code_postal'], ',') !== false) {
+                            $notice_code_postal = __('Vous avez choisi le type d\'assignation par département, veuillez ne pas utiliser de virgule dans le code postal', 'wpbc');
+                        }elseif (strpos($item['code_postal'], '-') !== false) {
+                            $notice_code_postal = __('Vous avez choisi le type d\'assignation par département, veuillez ne pas utiliser de tiret dans le code postal', 'wpbc');
+                        }elseif (strpos($item['code_postal'], ' ') !== false) {
+                            $notice_code_postal = __('Vous avez choisi le type d\'assignation par département, veuillez ne pas utiliser d\'espace dans le code postal', 'wpbc');
+                        }
+
+                        // insertion des données
+                        $item['code_postal'] = $cp_departement;
+                        $result = $wpdb->insert($table_name, $item);                        
+
                     }
                 }
                 
                
                
 
-                
-                if ($result) {
-                    $message = __('Code postal ajouté avec succès.', 'wpbc');
-                } else {
-                    if($notice_type_assignation){
-                        $notice = $notice_type_assignation;
-                    }else{
-                    $notice = __('Erreur lors de l\'ajout du code postal.', 'wpbc');
-                    }
+            
+            if ($result) {
+                $message = __('Code postal ajouté avec succès.', 'wpbc');
+               ?>
+                <script>
+                     let message = '<?php echo $message; ?>';
+                      window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$partenaire_id);?>' + '&success_create_message=' + message;
+                    </script>
+                <?php
+            } else {
+                if($notice_type_assignation){
+                    $notice = $notice_type_assignation;
+                }elseif($notice_code_postal){
+                    $notice = $notice_code_postal;
+                }else{
+                $notice = __('Erreur lors de l\'ajout du code postal.', 'wpbc');
                 }
+            }
             } else {
                 $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
                 if ($result) {
@@ -251,7 +223,6 @@ function wpbc_contacts_form_page_handler_cp()
     }
 
     add_meta_box('contacts_form_meta_box', __('Assignation du Code postal', 'wpbc'), 'wpbc_contacts_form_meta_box_handler_cp', 'contact', 'normal', 'default');
-
     ?>
 <div class="wrap">
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
@@ -266,7 +237,8 @@ function wpbc_contacts_form_page_handler_cp()
     <div id="message" class="updated"><p><?php echo $message ?></p></div>
     <?php endif;?>
 
-    <form id="form" method="POST">
+    <form id="form" method="POST" 
+          enctype="multipart/form-data">
         <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
         
         <input type="hidden" name="id" value="<?php echo $item['id'] ?>"/>
@@ -278,7 +250,7 @@ function wpbc_contacts_form_page_handler_cp()
                 <div id="post-body-content">
                     
                     <?php do_meta_boxes('contact', 'normal', $item); ?>
-                    <input type="submit" value="<?php _e('Enregistrer', 'wpbc')?>" id="submit" class="button-primary" name="submit">
+                    <input type="submit" value="<?php _e('Enregistrer', 'wpbc')?>" id="submit" class="button-primary" name="submit" OnClick="redirect_function()">
                 </div>
             </div>
         </div>
@@ -296,13 +268,14 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
 	<div class="formdatabc">		
 
         <form>
+            <?php if(empty($item['id'])){?>
             
             <h3 style="color:#135e96"> Veullez choisir le le type d'assignation du code postal :</h3>
            <?php // liste des choix de type d'assignation avec un checkbox par type d'assignation ?>
             <div class="form-group">
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="default" value="default">
+                    <input class="form-check-input" type="radio" name="type_assignation" id="default" value="default" <?php if($_POST['type_assignation'] == 'default'){echo 'checked';}?>>
                     <label class="form-check-label" for="default">
                            Assignation par défaut. Par exemple : <strong>75001</strong>
                     </label>
@@ -310,7 +283,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_virgule" value="cp_virgule">
+                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_virgule" value="cp_virgule" <?php if($_POST['type_assignation'] == 'cp_virgule'){echo 'checked';}?>>
                     <label class="form-check-label" for="cp_virgule">
                         Assignation par séparation avec des virgules. Par exemple : <strong>75001,75002,75003</strong>
                     </label>
@@ -318,7 +291,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_tranche" value="cp_tranche">
+                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_tranche" value="cp_tranche" <?php if($_POST['type_assignation'] == 'cp_tranche'){echo 'checked';}?>>
                     <label class="form-check-label" for="cp_tranche">
                         Assignation par tranche. Par exemple : <strong>75001-75002</strong>
                     </label>
@@ -326,7 +299,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_departement" value="cp_departement">
+                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_departement" value="cp_departement" <?php if($_POST['type_assignation'] == 'cp_departement'){echo 'checked';}?>>
                     <label class="form-check-label" for="cp_departement">
                         Assignation par département. Par exemple : <strong>75</strong>
                     </label>
@@ -334,6 +307,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                     
             </div>
+            <?php } ?>
             
             <div class="form2bc">
                 <p>			

@@ -65,47 +65,36 @@ function partenaire_options_install()
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql );
 
-    // crete departement table with partenaire_id as foreign key
-    $departement_table_name = $wpdb->prefix . "departement";
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $departement_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
-        departement varchar(255) NOT NULL,
-        partenaire_id int(11) NOT NULL,
-        PRIMARY KEY  (id)
-    ) $charset_collate;";
-
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-
     // import data from CSV file when plugin is activated
     // vérifier si la table est vide
     $count = $wpdb->get_var( "SELECT COUNT(*) FROM $villes_table_name" );
     if ( $count == 0 ) {
         $csv_file = plugin_dir_path( __FILE__ ) . 'public/files/villes_france.csv';
-        $csv_file = fopen( $csv_file, 'r' );
-        while ( ( $csv_data = fgetcsv( $csv_file, 0, ';' ) ) !== FALSE ) {
+        // vérifier si le fichier existe
+        if ( file_exists( $csv_file ) ) {
+         
+            $csv_file = fopen( $csv_file, 'r' );
+            while ( ( $csv_data = fgetcsv( $csv_file, 0, ';' ) ) !== FALSE ) {
+                // skip the first line  
+                if ( $line[0] == 'Code_commune_INSEE' ) {
+                    continue;
+                }
+                // vérifier si la ville existe déjà
+                // $count = $wpdb->get_var( "SELECT COUNT(*) FROM $villes_table_name WHERE Code_commune_INSEE = '$csv_data[0]'" );
+                // if ( $count == 0 ) {
+                    $wpdb->insert(
+                        $villes_table_name,
+                        array(
+                            'Code_commune_INSEE' => $csv_data[0],
+                            'Nom_commune' => $csv_data[1],
+                            'Code_postal' => $csv_data[2],
+                        )
+                    );
+                // }
 
-            // skip the first line
-            if ( $line[0] == 'Code_commune_INSEE' ) {
-                continue;
             }
-            // vérifier si la ville existe déjà
-            // $count = $wpdb->get_var( "SELECT COUNT(*) FROM $villes_table_name WHERE Code_commune_INSEE = '$csv_data[0]'" );
-            // if ( $count == 0 ) {
-                $wpdb->insert(
-                    $villes_table_name,
-                    array(
-                        'Code_commune_INSEE' => $csv_data[0],
-                        'Nom_commune' => $csv_data[1],
-                        'Code_postal' => $csv_data[2],
-                    )
-                );
-            // }
-
+            fclose( $csv_file );
         }
-        fclose( $csv_file );
     }
 
    
