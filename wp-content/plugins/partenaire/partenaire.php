@@ -14,6 +14,7 @@ Version: 1.7.2
 require plugin_dir_path( __FILE__ ) . 'crud_partenaire.php';
 require plugin_dir_path( __FILE__ ) . 'crud_code_postal.php';
 require plugin_dir_path( __FILE__ ) . 'crud_villes.php';
+require plugin_dir_path( __FILE__ ) . 'crud_departement.php';
 require plugin_dir_path( __FILE__ ) . 'metabox_code_postal.php';
 require plugin_dir_path( __FILE__ ) . 'metabox_departement.php';
 
@@ -58,6 +59,19 @@ function partenaire_options_install()
     $sql = "CREATE TABLE $code_postal_table_name (
         id int(11) NOT NULL AUTO_INCREMENT,
         code_postal varchar(255) NOT NULL,
+        partenaire_id int(11) NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+    $departement_table_name = $wpdb->prefix . "departement";
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $departement_table_name (
+        id int(11) NOT NULL AUTO_INCREMENT,
+        departement varchar(255) NOT NULL,
         partenaire_id int(11) NOT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";

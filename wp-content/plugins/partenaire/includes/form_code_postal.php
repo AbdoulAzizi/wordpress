@@ -175,6 +175,7 @@ function wpbc_contacts_form_page_handler_cp()
                     }elseif ($type_assignation == 'cp_departement') {
 
                         $cp_departement ='';
+                        $departement_table_name = $wpdb->prefix . 'departement';
                         $code_postal =  $_REQUEST['code_postal'];
                         // vérifier la taille du code postal
                         if (strlen($cp_departement) == 5){
@@ -200,7 +201,7 @@ function wpbc_contacts_form_page_handler_cp()
 
                         // insertion des données
                         $item['code_postal'] = $cp_departement;
-                        $result = $wpdb->insert($table_name, $item);                        
+                        $result = $wpdb->insert($departement_table_name, $item);                        
 
                     }
                 }
@@ -326,14 +327,14 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                     </label>
                     </p>
                 </div>
-                <div class="form-check">
+                <!-- <div class="form-check">
                     <p> 
                     <input class="form-check-input" type="radio" name="type_assignation" id="cp_departement" value="cp_departement" <?php if($_POST['type_assignation'] == 'cp_departement'){echo 'checked';}?>>
                     <label class="form-check-label" for="cp_departement">
                         Assignation par département. Par exemple : <strong>75</strong>
                     </label>
                     </p>
-                </div>
+                </div> -->
                     
             </div>
             <?php } ?>
