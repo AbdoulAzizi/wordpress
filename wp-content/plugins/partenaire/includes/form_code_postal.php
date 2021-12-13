@@ -1,9 +1,9 @@
 <?php
 
-function wpbc_contacts_page_handler_cp()
+function code_postal_page_handler()
 {
     global $wpdb;
-    $table = new Custom_Table_Example_List_Table_CP();
+    $table = new Code_Postal_Custom_List_Table();
     $table->prepare_items();
 
     $table_name = $wpdb->prefix . 'code_postal'; 
@@ -20,22 +20,24 @@ function wpbc_contacts_page_handler_cp()
     }
     
     $notice = '';
-    $partenaire_id = $_REQUEST['id_partenaiire'];
+    $partenaire_id = $_REQUEST['id_partenaire'];
     // var_dump($partenaire_id);
 
     // var_dump( $_REQUEST);exit;
 
-    $partenaire = $wpdb->get_results( "SELECT name FROM wp_partenaire WHERE id = '".$_REQUEST['id_partenaire']."'");
+    $partenaire = $wpdb->get_results( "SELECT name FROM wp_partenaire WHERE id_partenaire = '".$_REQUEST['id_partenaire']."'");
     // var_dump($partenaire[0]->name);
-    $partenaire_name = $partenaire[0]->name;
+    if($partenaire){
+        $partenaire_name = $partenaire[0]->name;
+    }
     if ('delete' === $table->current_action()) {
-        $message = ( count($_REQUEST['id'])).' '.__('Code (s) postal (aux) supprimé (s) avec succès.', 'wpbc');
+        $message = ( count($_REQUEST['id_code_postal'])).' '.__('Code (s) postal (aux) supprimé (s) avec succès.', 'wpbc');
     }
     ?>
 <div class="wrap">
 
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-    <h2><?php _e('Liste des codes postaux assignés au partenaire: '.$partenaire_name, 'wpbc')?> 
+    <h3><?php _e('Liste des codes postaux' , 'wpbc')?> - <?php if(isset($partenaire_name)){echo $partenaire_name;}?></h3>
     </h2>
     <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>"><?php _e('Voir la liste des partenaires', 'wpbc')?></a>
     <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=form_cp&id_partenaire='.$_REQUEST['id_partenaire'])?>"><?php _e('Assigner Code postal', 'wpbc')?></a>
@@ -49,7 +51,7 @@ function wpbc_contacts_page_handler_cp()
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
-        <input type="hidden" name="partenaire_id" value="<?php echo $_REQUEST['id'] ?>"/>
+        <input type="hidden" name="partenaire_id" value="<?php echo $_REQUEST['id_partenaire'] ?>"/>
         <?php $table->display() ?>
     </form>
 
@@ -59,7 +61,7 @@ function wpbc_contacts_page_handler_cp()
 }
 
 
-function wpbc_contacts_form_page_handler_cp()
+function code_postal_form_page_handler()
 {
     global $wpdb;
 
@@ -70,7 +72,7 @@ function wpbc_contacts_form_page_handler_cp()
     $partenaire_id = $_REQUEST['id_partenaire'];
 
     $default = array(
-        'id' => 0,
+        'id_code_postal' => 0,
         'code_postal'     => '',
         'partenaire_id' => $partenaire_id,
     );
@@ -80,10 +82,11 @@ function wpbc_contacts_form_page_handler_cp()
         $item = shortcode_atts($default, $_REQUEST);     
 
         $item_valid = form_validate_code_postal($item);
+        
 
 
         if ($item_valid === true) {
-            if ($item['id'] == 0) {
+            if ($item['id_code_postal'] == 0) {
                 // $result = $wpdb->insert($table_name, $item);
                 // $item['id'] = $wpdb->insert_id;
 
@@ -252,7 +255,7 @@ function wpbc_contacts_form_page_handler_cp()
                 }
             }
             } else {
-                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
+                $result = $wpdb->update($table_name, $item, array('id_code_postal' => $item['id_code_postal']));
                 if ($result) {
                     $message = __('success', 'wpbc');
                     ?>
@@ -273,8 +276,8 @@ function wpbc_contacts_form_page_handler_cp()
     else {
         
         $item = $default;
-        if (isset($_REQUEST['id'])) {
-            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+        if (isset($_REQUEST['id_code_postal'])) {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id_code_postal = %d", $_REQUEST['id_code_postal']), ARRAY_A);
             if (!$item) {
                 $item = $default;
                 // $notice = __('Aucun code postal trouvé.', 'wpbc');
@@ -286,7 +289,7 @@ function wpbc_contacts_form_page_handler_cp()
     ?>
 <div class="wrap">
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-    <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
+    <h2><?php _e('Codes postaux', 'wpbc')?> <a class="add-new-h2"
                                 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$_REQUEST['id_partenaire']);?>"><?php _e('Retour à la liste', 'wpbc')?></a>
     </h2>
 
@@ -301,7 +304,7 @@ function wpbc_contacts_form_page_handler_cp()
           enctype="multipart/form-data">
         <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
         
-        <input type="hidden" name="id" value="<?php echo $item['id'] ?>"/>
+        <input type="hidden" name="id_code_postal" value="<?php echo $item['id_code_postal'] ?>"/>
         <input type="hidden" name="id_partenaire" value="<?php echo $_REQUEST['id_partenaire'] ?>"/>
 
 
@@ -328,14 +331,14 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
 	<div class="formdatabc">		
 
         <form>
-            <?php if(empty($item['id'])){?>
+            <?php if(empty($item['id_code_postal'])){?>
             
             <h3 style="color:#135e96"> Veullez choisir le le type d'assignation du code postal :</h3>
            <?php // liste des choix de type d'assignation avec un checkbox par type d'assignation ?>
             <div class="form-group">
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="default" value="default" <?php if($_POST['type_assignation'] == 'default'){echo 'checked';}?>>
+                    <input class="form-check-input" type="radio" name="type_assignation" id="default" value="default" <?php if(isset($_POST['type_assignation']) && $_POST['type_assignation'] == 'default') echo 'checked'; ?>>
                     <label class="form-check-label" for="default">
                            Assignation par défaut. Par exemple : <strong>75001</strong>
                     </label>
@@ -343,7 +346,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_virgule" value="cp_virgule" <?php if($_POST['type_assignation'] == 'cp_virgule'){echo 'checked';}?>>
+                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_virgule" value="cp_virgule" <?php if(isset($_POST['type_assignation']) && $_POST['type_assignation'] == 'cp_virgule') echo 'checked'; ?>>
                     <label class="form-check-label" for="cp_virgule">
                         Assignation par séparation avec des virgules. Par exemple : <strong>75001,75002,75003</strong>
                     </label>
@@ -351,7 +354,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                 <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_tranche" value="cp_tranche" <?php if($_POST['type_assignation'] == 'cp_tranche'){echo 'checked';}?>>
+                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_tranche" value="cp_tranche" <?php if(isset($_POST['type_assignation']) && $_POST['type_assignation'] == 'cp_tranche') echo 'checked'; ?>>
                     <label class="form-check-label" for="cp_tranche">
                         Assignation par tranche. Par exemple : <strong>75001-75002</strong>
                     </label>
@@ -359,7 +362,7 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
                 </div>
                 <!-- <div class="form-check">
                     <p> 
-                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_departement" value="cp_departement" <?php if($_POST['type_assignation'] == 'cp_departement'){echo 'checked';}?>>
+                    <input class="form-check-input" type="radio" name="type_assignation" id="cp_departement" value="cp_departement" <?php if(isset($_POST['type_assignation']) && $_POST['type_assignation'] == 'cp_departement') echo 'checked'; ?>>
                     <label class="form-check-label" for="cp_departement">
                         Assignation par département. Par exemple : <strong>75</strong>
                     </label>

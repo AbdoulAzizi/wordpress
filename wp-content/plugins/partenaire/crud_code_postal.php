@@ -4,10 +4,10 @@ defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
 // require plugin_dir_path( __FILE__ ) . 'includes/code_postal.php';
 require plugin_dir_path( __FILE__ ) . 'includes/form_code_postal.php';
 
-function wpbc_admin_styles() {
+function cp_admin_styles() {
     wp_enqueue_style('custom-styles', plugins_url('/css/styles.css', __FILE__ ));
 	}
-add_action('admin_enqueue_scripts', 'wpbc_admin_styles');
+add_action('admin_enqueue_scripts', 'cp_admin_styles');
 
 
 function wpbc_plugin_load_textdomain_cp() {
@@ -16,28 +16,12 @@ load_plugin_textdomain( 'wpbc', false, basename( dirname( __FILE__ ) ) . '/langu
 add_action( 'plugins_loaded', 'wpbc_plugin_load_textdomain_cp' );
 
 
-global $wpbc_db_version;
-$wpbc_db_version = '1.1.0'; 
-
-
-
-function wpbc_update_db_check_cp()
-{
-    global $wpbc_db_version;
-    if (get_site_option('wpbc_db_version') != $wpbc_db_version) {
-        wpbc_install();
-    }
-}
-
-add_action('plugins_loaded', 'wpbc_update_db_check_cp');
-
-
 if (!class_exists('WP_List_Table')) {
     require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
 }
 
 
-class Custom_Table_Example_List_Table_CP extends WP_List_Table
+class Code_Postal_Custom_List_Table extends WP_List_Table
  { 
     function __construct()
     {
@@ -56,19 +40,13 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
     }
 
 
-    function column_phone($item)
-    {
-        return '<em>' . $item['phone'] . '</em>';
-    }
-
-
     function column_name($item)
     {
 
         $actions = array(
             // 'cp' => sprintf('<a href="?page=form_cp&id=%s">%s</a>', $item['id'], __('cp', 'wpbc')),
-            'edit' => sprintf('<a href="?page=form_cp&id=%s&id_partenaire=%s">%s</a>', $item['id'],$_REQUEST['id_partenaire'], __('Éditer', 'wpbc')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id'], $_REQUEST['id_partenaire'], __('Supprimer', 'wpbc')),
+            'edit' => sprintf('<a href="?page=form_cp&id_code_postal=%s&id_partenaire=%s">%s</a>', $item['id_code_postal'],$_REQUEST['id_partenaire'], __('Éditer', 'wpbc')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id_code_postal=%s&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id_code_postal'], $_REQUEST['id_partenaire'], __('Supprimer', 'wpbc')),
         );
 
         return sprintf('%s %s',
@@ -81,8 +59,8 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
     function column_cb($item)
     {
         return sprintf(
-            '<input type="checkbox" name="id[]" value="%s" />',
-            $item['id']
+            '<input type="checkbox" name="id_code_postal[]" value="%s" />',
+            $item['id_code_postal']
         );
     }
 
@@ -117,11 +95,11 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
         $table_name = $wpdb->prefix . 'code_postal'; 
 
         if ('delete' === $this->current_action()) {
-            $ids = isset($_REQUEST['id']) ? $_REQUEST['id'] : array();
+            $ids = isset($_REQUEST['id_code_postal']) ? $_REQUEST['id_code_postal'] : array();
             if (is_array($ids)) $ids = implode(',', $ids);
 
             if (!empty($ids)) {
-                $wpdb->query("DELETE FROM $table_name WHERE id IN($ids)");
+                $wpdb->query("DELETE FROM $table_name WHERE id_code_postal IN($ids)");
             }
         }
     }
@@ -144,7 +122,7 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
        
         $this->process_bulk_action();
 
-        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name WHERE partenaire_id = $partenaire_id");
+        $total_items = $wpdb->get_var("SELECT COUNT(id_code_postal) FROM $table_name WHERE partenaire_id = $partenaire_id");
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;

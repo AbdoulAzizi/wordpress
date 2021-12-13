@@ -11,7 +11,7 @@ function wpbc_contacts_page_handler()
 
 
     $default = array(
-        'id' => 0,
+        'id_partenaire' => 0,
         'name'      => '',
         'phone'  => '',
         'email'     => '',
@@ -22,15 +22,15 @@ function wpbc_contacts_page_handler()
 
     if ( isset($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], basename(__FILE__))) {
         
-        $item = shortcode_atts($default, $_REQUEST);     
+        $item = shortcode_atts($default, $_REQUEST);  
 
         $item_valid = wpbc_validate_contact($item);
         if ($item_valid === true) {
-            if ($item['id'] == 0) {
+            if ($item['id_partenaire'] == 0) {
+                var_dump($item);
                 // gérer la présence d'un apostrophe dans le nom
                 $item['name'] = __( stripslashes($item['name']) );
                 $result = $wpdb->insert($table_name, $item);
-                $item['id'] = $wpdb->insert_id;
                 if ($result) {
                     $message = __('Partenaire ajouté avec succès.', 'wpbc');
                 } else {
@@ -38,7 +38,7 @@ function wpbc_contacts_page_handler()
                 }
             } else {
                 $item['name'] = __( stripslashes($item['name']) );
-                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
+                $result = $wpdb->update($table_name, $item, array('id_partenaire' => $item['id_partenaire']));
                 if ($result) {
                     $message = __('Partenaire mis à jour avec succès.', 'wpbc');
                 } else {
@@ -52,22 +52,22 @@ function wpbc_contacts_page_handler()
     }else {
         
         $item = $default;
-        if (isset($_REQUEST['id'])) {
-            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+        if (isset($_REQUEST['id_partenaire'])) {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id_partenaire = %d", $_REQUEST['id_partenaire']), ARRAY_A);
             if (!$item) {
                 $item = $default;
-                $notice = __('Aucun partenaire trouvé.', 'wpbc');
+                // $notice = __('Aucun partenaire trouvé.', 'wpbc');
             }
         }
     }
 
 
-    $table = new Custom_Table_Example_List_Table();
+    $table = new Partenaire_Custom_List_Table();
     $table->prepare_items();
 
     // $message = '';
     if ('delete' === $table->current_action()) {
-        $message = ( count($_REQUEST['id'])).' '.__('partenaire(s) supprimé(s) avec succès.', 'wpbc');
+        $message = ( count($_REQUEST['id_partenaire'])).' '.__('partenaire(s) supprimé(s) avec succès.', 'wpbc');
     }
     ?>
 <div class="wrap">
@@ -86,70 +86,13 @@ function wpbc_contacts_page_handler()
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
-        <input type="hidden" name="id" value="<?php echo $_REQUEST['id'] ?>"/>
+        <input type="hidden" name="id_partenaire" value="<?php echo $_REQUEST['id_partenaire'] ?>"/>
         <?php $table->display() ?>
     </form>
 
 </div>
 <?php
 }
-
- // create partenaire page to assign code postal
- function add_code_postal_page()
- {
-
-    // var_dump($_REQUEST);exit;
-     global $wpdb;
-     $table_name = $wpdb->prefix . 'partenaire'; 
-     $id = $_REQUEST['id'];
-     $partenaire = $wpdb->get_results("SELECT * FROM $table_name WHERE id = $id");
-     
-     ?>
-     <div class="wrap">
-     <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
-                                href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>"><?php _e('Retour à la liste', 'wpbc')?></a>
-    </h2>
-
-         <h2>Assigner un ou plusieurs code postal (aux) au partenaire <?php echo $partenaire[0]->name; ?></h2>
-         <!-- exemple des formats de code postal -->
-            <p>Vous pouvez assigner un seul code postal. par exemple : <strong>75001</strong></p>
-            <p>Vous pouvez assigner plusieurs code postaux en les séparant par une virgule. par exemple : <strong>75001,75002,75003</strong></p>
-            <p>Vous pouvez assigner un intervalle de code postal. par exemple : <strong>75001-75003</strong></p>
-        <!-- fin exemple -->
-
-        <!-- Laisser une alert à l'utilisateur -->
-        <div class="alert alert-danger" role="alert">
-            <strong>Note!</strong> Si le partenaire a déjà un ou plusieurs code postal(aux) assigné(s), vous pouvez lui assigner d'autres en les séparant par une virgule.
-        </div>
-        
-         <form method="post" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>" enctype="multipart/form-data" >
-             <table class="form-table">
-                 <tbody>
-                     <tr>
-                         <th scope="row">
-                             <label for="code_postal">Code Postal </label>
-                         </th>
-                         <td>
-                             <input name="code_postal" type="text" id="code_postal" value="<?php echo $partenaire[0]->code_postal;?>" class="regular-text">
-                         </td>
-                     </tr>
-                 </tbody>
-             </table>
-             <input type="hidden" name="partenaire_id" value="<?php echo $id; ?>">
-             <input type="submit" name="submitCodePostal" id="submitCodePostal" class="button button-primary" value="Enregistrer">
-         </form>
-     </div>
-     <?php
-
-// var_dump(plugin_dir_path(__FILE__) . 'meta_cp.php');
-    // require_once plugin_dir_url('').'partenaire/code_postal.php';
-    // var_dump(plugin_dir_url('').'partenaire/code_postal.php');exit;
-    //  include_once plugin_dir_path(__FILE__) . 'meta_cp.php';
-    //  wpbc_contacts_page_handler1();
-     
- }
-
-
 
 function wpbc_contacts_form_page_handler()
 {
@@ -162,7 +105,7 @@ function wpbc_contacts_form_page_handler()
 
 
     $default = array(
-        'id' => 0,
+        'id_partenaire' => 0,
         'name'      => '',
         'phone'  => '',
         'email'     => '',
@@ -173,8 +116,8 @@ function wpbc_contacts_form_page_handler()
     
         
         $item = $default;
-        if (isset($_REQUEST['id'])) {
-            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+        if (isset($_REQUEST['id_partenaire'])) {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id_partenaire = %d", $_REQUEST['id_partenaire']), ARRAY_A);
             if (!$item) {
                 $item = $default;
                 $notice = __('Item not found', 'wpbc');
@@ -195,7 +138,7 @@ function wpbc_contacts_form_page_handler()
     <form id="form" method="POST" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=partenaires');?>" enctype="multipart/form-data">
         <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
         
-        <input type="hidden" name="id" value="<?php echo $item['id'] ?>"/>
+        <input type="hidden" name="id_partenaire" value="<?php echo $item['id_partenaire'] ?>"/>
 
         <div class="metabox-holder" id="poststuff">
             <div id="post-body">

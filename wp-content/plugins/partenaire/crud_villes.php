@@ -4,10 +4,10 @@ defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/form_villes.php';
 
-function wpbc_custom_admin_styles_villes() {
+function admin_styles_villes() {
     wp_enqueue_style('custom-styles', plugins_url('/css/styles.css', __FILE__ ));
 	}
-add_action('admin_enqueue_scripts', 'wpbc_custom_admin_styles_villes');
+add_action('admin_enqueue_scripts', 'admin_styles_villes');
 
 
 function wpbc_plugin_load_textdomain_villes() {
@@ -16,47 +16,20 @@ load_plugin_textdomain( 'wpbc', false, basename( dirname( __FILE__ ) ) . '/langu
 add_action( 'plugins_loaded', 'wpbc_plugin_load_textdomain_villes' );
 
 
-global $wpbc_db_version;
-$wpbc_db_version = '1.1.0'; 
-
-
-
-function wpbc_install_data_villes()
-{
-    global $wpdb;
-
-    $table_name = $wpdb->prefix . 'villes_france'; 
-
-}
-
-register_activation_hook(__FILE__, 'wpbc_install_data_villes');
-
-
-function wpbc_update_db_check_villes()
-{
-    global $wpbc_db_version;
-    if (get_site_option('wpbc_db_version') != $wpbc_db_version) {
-        wpbc_install();
-    }
-}
-
-add_action('plugins_loaded', 'wpbc_update_db_check_villes');
-
 
 if (!class_exists('WP_List_Table')) {
     require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
 }
 
 
-class Custom_Table_Example_List_Table_Villes extends WP_List_Table
+class Villes_Custom_List_Table extends WP_List_Table
  { 
     function __construct()
     {
         global $status, $page;
 
         parent::__construct(array(
-            'singular' => 'contact',
-            'plural'   => 'contacts',
+            
         ));
     }
 
@@ -67,18 +40,12 @@ class Custom_Table_Example_List_Table_Villes extends WP_List_Table
     }
 
 
-    function column_phone($item)
-    {
-        return '<em>' . $item['phone'] . '</em>';
-    }
-
-
     function column_name($item)
     {
 
         $actions = array(
-            'edit' => sprintf('<a href="?page=form_villes&id=%s">%s</a>', $item['id'], __('Éditer', 'wpbc')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Supprimer', 'wpbc')),
+            'edit' => sprintf('<a href="?page=form_villes&id_ville=%s">%s</a>', $item['id_ville'], __('Éditer', 'wpbc')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id_ville=%s">%s</a>', $_REQUEST['page'], $item['id_ville'], __('Supprimer', 'wpbc')),
         );
 
         return sprintf('%s %s',
@@ -86,19 +53,13 @@ class Custom_Table_Example_List_Table_Villes extends WP_List_Table
             $this->row_actions($actions)
         );
     }
-
-    function column_code_postal($item)
-    {
-        return '<em>' . $item['Code_postal'] . '</em>';
-    }
-
    
 
     function column_cb($item)
     {
         return sprintf(
-            '<input type="checkbox" name="id[]" value="%s" />',
-            $item['id']
+            '<input type="checkbox" name="id_ville[]" value="%s" />',
+            $item['id_ville']
         );
     }
 
@@ -107,7 +68,6 @@ class Custom_Table_Example_List_Table_Villes extends WP_List_Table
         $columns = array(
             'cb' => '<input type="checkbox" />', 
             'name'      => __('Code commune INSEE', 'wpbc'),
-            // 'Code_commune_INSEE'  => __('Code communeINSEE', 'wpbc'),
             'Nom_commune'     => __('Nom commune', 'wpbc'),
             'Code_postal'     => __('Code postal', 'wpbc'),
         );
@@ -118,7 +78,6 @@ class Custom_Table_Example_List_Table_Villes extends WP_List_Table
     {
         $sortable_columns = array(
             'name'      => array('Code commune INSEE', true),
-            // 'Code_commune_INSEE'  => array('Code communeINSEE', true),
             'Nom_commune'     => array('Nom commune', true),
             'Code_postal'     => array('Code postal', true),
         );
@@ -139,11 +98,11 @@ class Custom_Table_Example_List_Table_Villes extends WP_List_Table
         $table_name = $wpdb->prefix . 'villes_france'; 
 
         if ('delete' === $this->current_action()) {
-            $ids = isset($_REQUEST['id']) ? $_REQUEST['id'] : array();
+            $ids = isset($_REQUEST['id_ville']) ? $_REQUEST['id_ville'] : array();
             if (is_array($ids)) $ids = implode(',', $ids);
 
             if (!empty($ids)) {
-                $wpdb->query("DELETE FROM $table_name WHERE id IN($ids)");
+                $wpdb->query("DELETE FROM $table_name WHERE id_ville IN($ids)");
             }
         }
     }
@@ -163,11 +122,11 @@ class Custom_Table_Example_List_Table_Villes extends WP_List_Table
        
         $this->process_bulk_action();
 
-        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+        $total_items = $wpdb->get_var("SELECT COUNT(id_ville) FROM $table_name");
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
-        $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'id';
+        $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'id_ville';
         $order = (isset($_REQUEST['order']) && in_array($_REQUEST['order'], array('asc', 'desc'))) ? $_REQUEST['order'] : 'asc';
 
 

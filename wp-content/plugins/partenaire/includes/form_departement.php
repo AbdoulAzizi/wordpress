@@ -3,7 +3,7 @@
 function departement_page_handler()
 {
     global $wpdb;
-    $table = new Custom_Table_Example_List_Table_Departement();
+    $table = new Departement_Custom_List_Table();
     $table->prepare_items();
 
     $table_name = $wpdb->prefix . 'departement'; 
@@ -20,16 +20,16 @@ function departement_page_handler()
     }
     
     $notice = '';
-    $partenaire_id = $_REQUEST['id_partenaiire'];
+    $partenaire_id = $_REQUEST['id_partenaire'];
     // var_dump($partenaire_id);
 
     // var_dump( $_REQUEST);exit;
 
-    $partenaire = $wpdb->get_results( "SELECT name FROM wp_partenaire WHERE id = '".$_REQUEST['id_partenaire']."'");
+    $partenaire = $wpdb->get_results( "SELECT name FROM wp_partenaire WHERE id_partenaire = '".$_REQUEST['id_partenaire']."'");
     // var_dump($partenaire[0]->name);
     $partenaire_name = $partenaire[0]->name;
     if ('delete' === $table->current_action()) {
-        $message = ( count($_REQUEST['id'])).' '.__('Département (s) supprimé (s) avec succès.', 'wpbc');
+        $message = ( count($_REQUEST['id_departement'])).' '.__('Département (s) supprimé (s) avec succès.', 'wpbc');
     }
     ?>
 <div class="wrap">
@@ -70,7 +70,7 @@ function departement_form_page_handler()
     $partenaire_id = $_REQUEST['id_partenaire'];
 
     $default = array(
-        'id' => 0,
+        'id_departement' => 0,
         'departement'     => '',
         'partenaire_id' => $partenaire_id,
     );
@@ -84,7 +84,7 @@ function departement_form_page_handler()
 
 
         if ($item_valid === true) {
-            if ($item['id'] == 0) {
+            if ($item['id_departement'] == 0) {
                 // $result = $wpdb->insert($table_name, $item);
                 // $item['id'] = $wpdb->insert_id;
 
@@ -150,7 +150,7 @@ function departement_form_page_handler()
                 }
             }
             } else {
-                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
+                $result = $wpdb->update($table_name, $item, array('id_departement' => $item['id_departement']));
                 if ($result) {
                     $message = __('success', 'wpbc');
                     ?>
@@ -171,8 +171,8 @@ function departement_form_page_handler()
     else {
         
         $item = $default;
-        if (isset($_REQUEST['id'])) {
-            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+        if (isset($_REQUEST['id_departement'])) {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id_departement = %d", $_REQUEST['id_departement']), ARRAY_A);
             if (!$item) {
                 $item = $default;
                 // $notice = __('Aucun code postal trouvé.', 'wpbc');
@@ -184,7 +184,7 @@ function departement_form_page_handler()
     ?>
 <div class="wrap">
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-    <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
+    <h2><?php _e('Départements', 'wpbc')?> <a class="add-new-h2"
                                 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_departement&id_partenaire='.$_REQUEST['id_partenaire']);?>"><?php _e('Retour à la liste', 'wpbc')?></a>
     </h2>
 
@@ -199,7 +199,7 @@ function departement_form_page_handler()
           enctype="multipart/form-data">
         <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
         
-        <input type="hidden" name="id" value="<?php echo $item['id'] ?>"/>
+        <input type="hidden" name="id_departement" value="<?php echo $item['id_departement'] ?>"/>
         <input type="hidden" name="id_partenaire" value="<?php echo $_REQUEST['id_partenaire'] ?>"/>
 
 
@@ -235,7 +235,7 @@ function departement_form_meta_box_handler($item)
                 Exemple: Si le code postal est le <b>750001</b>, le code département sera <b>750</b>
                 <br> </p>
             <strong> <?php _e('Cas 2 : Saisir le code département', 'wpbc')?></strong>
-            <p> Pr défaut le code département sera composé de 2 chiffres. <br>
+            <p> Par défaut le code département sera composé de 2 chiffres. <br>
                 Exemple: <b>75</b>  
             
             <div class="form2bc">

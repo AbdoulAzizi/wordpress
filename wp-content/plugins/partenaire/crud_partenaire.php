@@ -48,7 +48,7 @@ if (!class_exists('WP_List_Table')) {
 }
 
 
-class Custom_Table_Example_List_Table extends WP_List_Table
+class Partenaire_Custom_List_Table extends WP_List_Table
  { 
     function __construct()
     {
@@ -77,30 +77,16 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     {
 
         $actions = array(
-            'list_code_postal' =>sprintf('<a href="?page=liste_code_postal&id_partenaire=%s">%s</a>',  $item['id'],__('Code postal', 'wpbc')),
-            'liste_departement' =>sprintf('<a href="?page=liste_departement&id_partenaire=%s">%s</a>',  $item['id'],__('Département', 'wpbc')),
-            // 'add_code_postal' => sprintf('<a href="?page=form_departement&id_partenaire=%s">%s</a>',$item['id'],__('Département','wpbc')),
-            'edit' => sprintf('<a href="?page=contacts_form&id=%s">%s</a>', $item['id'], __('Éditer', 'wpbc')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Supprimer', 'wpbc')),
+            'list_code_postal' =>sprintf('<a href="?page=liste_code_postal&id_partenaire=%s">%s</a>',  $item['id_partenaire'],__('Code postal', 'wpbc')),
+            'liste_departement' =>sprintf('<a href="?page=liste_departement&id_partenaire=%s">%s</a>',  $item['id_partenaire'],__('Département', 'wpbc')),
+            'edit' => sprintf('<a href="?page=contacts_form&id_partenaire=%s">%s</a>', $item['id_partenaire'], __('Éditer', 'wpbc')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id_partenaire'], __('Supprimer', 'wpbc')),
         );
 
         return sprintf('%s %s',
             $item['name'],
             $this->row_actions($actions)
         );
-    }
-
-    function add_cp($item)
-    {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'partenaire'; 
-        $id = $item['id'];
-        $code_postal = $_POST['code_postal'];
-        $wpdb->insert($table_name, array(
-            'id' => $id,
-            'code_postal' => $code_postal,
-        ));
-        wp_redirect(admin_url('admin.php?page=wpbc_list_table_example'));
     }
 
     function column_code_postal($item)
@@ -113,8 +99,8 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     function column_cb($item)
     {
         return sprintf(
-            '<input type="checkbox" name="id[]" value="%s" />',
-            $item['id']
+            '<input type="checkbox" name="id_partenaire[]" value="%s" />',
+            $item['id_partenaire']
         );
     }
 
@@ -155,13 +141,20 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'partenaire'; 
+        $code_postal_table = $wpdb->prefix . 'code_postal';
+        $departement_table = $wpdb->prefix . 'departement';
+
 
         if ('delete' === $this->current_action()) {
-            $ids = isset($_REQUEST['id']) ? $_REQUEST['id'] : array();
+            $ids = isset($_REQUEST['id_partenaire']) ? $_REQUEST['id_partenaire'] : array();
             if (is_array($ids)) $ids = implode(',', $ids);
 
             if (!empty($ids)) {
-                $wpdb->query("DELETE FROM $table_name WHERE id IN($ids)");
+                $wpdb->query("DELETE FROM $table_name WHERE id_partenaire IN($ids)");
+                // Supprimer les codes postaux associés
+                $wpdb->query("DELETE FROM $code_postal_table WHERE partenaire_id IN($ids)");
+                // Supprimer les départements associés
+                $wpdb->query("DELETE FROM $departement_table WHERE partenaire_id IN($ids)");
             }
         }
     }
@@ -181,7 +174,7 @@ class Custom_Table_Example_List_Table extends WP_List_Table
        
         $this->process_bulk_action();
 
-        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+        $total_items = $wpdb->get_var("SELECT COUNT(id_partenaire) FROM $table_name");
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
@@ -200,35 +193,31 @@ class Custom_Table_Example_List_Table extends WP_List_Table
     }
 }
 
-function wpbc_admin_menu()
+function partenaire_admin_menu()
 {
     add_menu_page(__('Partenaire', 'wpbc'), __('Partenaire', 'wpbc'), 'activate_plugins', 'partenaires', 'wpbc_contacts_page_handler');
     add_submenu_page('Partenaire', __('Partenaire', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'wpbc_contacts_page_handler');
    
     add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'wpbc_contacts_form_page_handler');
-    add_submenu_page('null', __('CP', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_cp', 'wpbc_contacts_form_page_handler_cp');
-    add_submenu_page('null', __('CP', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_departement', 'departement_form_page_handler');
+    add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_cp', 'code_postal_form_page_handler');
+    add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_departement', 'departement_form_page_handler');
     add_submenu_page('null', __('Assigner code postal', 'wpbc'), __('Assigner code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
-    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'liste_code_postal', 'wpbc_contacts_page_handler_cp');
+    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'liste_code_postal', 'code_postal_page_handler');
     add_submenu_page('null', __('Département', 'wpbc'), __('Département', 'wpbc'), 'activate_plugins', 'liste_departement', 'departement_page_handler');
-    add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 8, 'importation_des_villes', 'partenaire_admin_liste_des_villes');
-    add_submenu_page('partenaires', 'Liste des villes', 'Liste des villes', 8, 'liste_des_villes', 'wpbc_contacts_page_handler_villes');
+    add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 'manage_options', 'importation_des_villes', 'partenaire_admin_liste_des_villes');
+    add_submenu_page('partenaires', 'Liste des villes', 'Liste des villes', 'manage_options', 'liste_des_villes', 'wpbc_contacts_page_handler_villes');
     add_submenu_page('null', __('CP', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_villes', 'form_page_handler_villes');
 
 
 }
 
-add_action('admin_menu', 'wpbc_admin_menu');
+add_action('admin_menu', 'partenaire_admin_menu');
 
 function wpbc_validate_contact($item)
 {
     $messages = array();
 
     if (empty($item['name'])) $messages[] = __('Le nom est obligatoire', 'wpbc');
-    // if (empty($item['lastname'])) $messages[] = __('Last Name is required', 'wpbc');
-    // if (!empty($item['email']) && !is_email($item['email'])) $messages[] = __('E-Mail is in wrong format', 'wpbc');
-    // if(!empty($item['phone']) && !absint(intval($item['phone'])))  $messages[] = __('Phone can not be less than zero');
-    // if(!empty($item['phone']) && !preg_match('/[0-9]+/', $item['phone'])) $messages[] = __('Phone must be number');
     
 
     if (empty($messages)) return true;

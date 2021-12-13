@@ -11,7 +11,7 @@ function wpbc_contacts_page_handler_villes()
 
 
     $default = array(
-        'id' => 0,
+        'id_ville' => 0,
         'Code_commune_INSEE'      => '',
         'Nom_commune'  => '',
         'Code_postal'     => '',
@@ -22,9 +22,9 @@ function wpbc_contacts_page_handler_villes()
 
         $item_valid = validate_form_villes($item);
         if ($item_valid === true) {
-            if ($item['id'] == 0) {
+            if ($item['id_ville'] == 0) {
                 $result = $wpdb->insert($table_name, $item);
-                $item['id'] = $wpdb->insert_id;
+                $item['id_ville'] = $wpdb->insert_id;
                 if ($result) {
                     $message = __('Ville créée avec succès.', 'wpbc');
                    
@@ -32,7 +32,7 @@ function wpbc_contacts_page_handler_villes()
                     $notice = __('Erreur lors de la création de la ville.', 'wpbc');
                 }
             } else {
-                $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
+                $result = $wpdb->update($table_name, $item, array('id_ville' => $item['id_ville']));
                 if ($result) {
                     $message = __('Ville mise à jour avec succès.', 'wpbc');
                 } else {
@@ -47,8 +47,8 @@ function wpbc_contacts_page_handler_villes()
     else {
         
         $item = $default;
-        if (isset($_REQUEST['id'])) {
-            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+        if (isset($_REQUEST['id_ville'])) {
+            $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id_ville = %d", $_REQUEST['id_ville']), ARRAY_A);
             if (!$item) {
                 $item = $default;
                 // $notice = __('Aucune ville trouvée.', 'wpbc');
@@ -56,12 +56,12 @@ function wpbc_contacts_page_handler_villes()
         }
     }
 
-    $table = new Custom_Table_Example_List_Table_Villes();
+    $table = new Villes_Custom_List_Table();
     $table->prepare_items();
 
     // $message = '';
     if ('delete' === $table->current_action()) {
-        $message = ( count($_REQUEST['id'])).' '.__('Ville (s) supprimée (s) avec succès', 'wpbc');
+        $message = ( count($_REQUEST['id_ville'])).' '.__('Ville (s) supprimée (s) avec succès', 'wpbc');
     }
     ?>
 <div class="wrap">
@@ -81,7 +81,7 @@ function wpbc_contacts_page_handler_villes()
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
-        <input type="hidden" name="id" value="<?php echo $_REQUEST['id'] ?>"/>
+        <input type="hidden" name="id_ville" value="<?php echo $_REQUEST['id_ville'] ?>"/>
         <?php $table->display() ?>
     </form>
 
@@ -99,7 +99,7 @@ function form_page_handler_villes()
 
 
     $default = array(
-        'id' => 0,
+        'id_ville' => 0,
         'Code_commune_INSEE'      => '',
         'Nom_commune'  => '',
         'Code_postal'     => '',
@@ -107,8 +107,8 @@ function form_page_handler_villes()
 
    
     $item = $default;
-    if (isset($_REQUEST['id'])) {
-        $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $_REQUEST['id']), ARRAY_A);
+    if (isset($_REQUEST['id_ville'])) {
+        $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id_ville = %d", $_REQUEST['id_ville']), ARRAY_A);
         if (!$item) {
             $item = $default;
             $notice = __('Item not found', 'wpbc');
@@ -128,7 +128,7 @@ function form_page_handler_villes()
     <form id="form" method="POST" enctype="multipart/form-data" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_des_villes');?>">
         <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
         
-        <input type="hidden" name="id" value="<?php echo $item['id'] ?>"/>
+        <input type="hidden" name="id_ville" value="<?php echo $item['id_ville'] ?>"/>
 
         <div class="metabox-holder" id="poststuff">
             <div id="post-body">

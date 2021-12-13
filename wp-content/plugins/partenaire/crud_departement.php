@@ -10,7 +10,7 @@ if (!class_exists('WP_List_Table')) {
 }
 
 
-class Custom_Table_Example_List_Table_Departement extends WP_List_Table
+class Departement_Custom_List_Table extends WP_List_Table
  { 
     function __construct()
     {
@@ -33,8 +33,8 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
     {
 
         $actions = array(
-            'edit' => sprintf('<a href="?page=form_departement&id=%s&id_partenaire=%s">%s</a>', $item['id'], $_REQUEST['id_partenaire'], __('Éditer', 'partenaire')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id'], $_REQUEST['id_partenaire'], __('Supprimer', 'partenaire')),
+            'edit' => sprintf('<a href="?page=form_departement&id_departement=%s&id_partenaire=%s">%s</a>', $item['id_departement'], $_REQUEST['id_partenaire'], __('Éditer', 'partenaire')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id_departement=%s&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id_departement'], $_REQUEST['id_partenaire'], __('Supprimer', 'partenaire')),
         );
 
         return sprintf('%s %s',
@@ -53,8 +53,8 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
     function column_cb($item)
     {
         return sprintf(
-            '<input type="checkbox" name="id[]" value="%s" />',
-            $item['id']
+            '<input type="checkbox" name="id_departement[]" value="%s" />',
+            $item['id_departement']
         );
     }
 
@@ -87,13 +87,14 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'departement'; 
-
+       
         if ('delete' === $this->current_action()) {
-            $ids = isset($_REQUEST['id']) ? $_REQUEST['id'] : array();
+            $ids = isset($_REQUEST['id_departement']) ? $_REQUEST['id_departement'] : array();
             if (is_array($ids)) $ids = implode(',', $ids);
 
             if (!empty($ids)) {
-                $wpdb->query("DELETE FROM $table_name WHERE id IN($ids)");
+                $wpdb->query("DELETE FROM $table_name WHERE id_departement IN($ids)");
+                
             }
         }
     }
@@ -115,7 +116,7 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
        
         $this->process_bulk_action();
 
-        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name WHERE partenaire_id = $partenaire_id");
+        $total_items = $wpdb->get_var("SELECT COUNT(id_departement) FROM $table_name WHERE partenaire_id = $partenaire_id");
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;

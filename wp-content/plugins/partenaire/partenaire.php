@@ -30,7 +30,7 @@ function partenaire_options_install()
         Code_commune_INSEE int(11) NULL,
         Nom_commune varchar(255) NOT NULL,
         Code_postal varchar(255)  NULL,
-        PRIMARY KEY  (id)
+        PRIMARY KEY  (id_ville)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -46,7 +46,7 @@ function partenaire_options_install()
         phone varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         siret varchar(255) NOT NULL,
-        PRIMARY KEY  (id)
+        PRIMARY KEY  (id_partenaire)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -60,7 +60,7 @@ function partenaire_options_install()
         id_code_postal int(11) NOT NULL AUTO_INCREMENT,
         code_postal varchar(255) NOT NULL,
         partenaire_id int(11) NOT NULL,
-        PRIMARY KEY  (id)
+        PRIMARY KEY  (id_code_postal)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -73,7 +73,7 @@ function partenaire_options_install()
         id_departement int(11) NOT NULL AUTO_INCREMENT,
         departement varchar(255) NOT NULL,
         partenaire_id int(11) NOT NULL,
-        PRIMARY KEY  (id)
+        PRIMARY KEY  (id_departement)
     ) $charset_collate;";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -90,7 +90,7 @@ function partenaire_options_install()
             $csv_file = fopen( $csv_file, 'r' );
             while ( ( $csv_data = fgetcsv( $csv_file, 0, ';' ) ) !== FALSE ) {
                 // skip the first line  
-                if ( $line[0] == 'Code_commune_INSEE' ) {
+                if ( $csv_data[0] == 'Code_commune_INSEE' ) {
                     continue;
                 }
                 // vérifier si la ville existe déjà
@@ -227,37 +227,6 @@ function partenaire_import_csv() {
 }
 
 
-// function to display the custom post type
-function partenaire_display_post_type() {
-    $args = array(
-        'post_type' => 'partenaire',
-        'post_status' => 'publish',
-        'posts_per_page' => -1,
-        'order' => 'ASC',
-        'orderby' => 'title'
-    );
-    $partenaire_query = new WP_Query( $args );
-    if ( $partenaire_query->have_posts() ) {
-        while ( $partenaire_query->have_posts() ) {
-            $partenaire_query->the_post();
-            ?>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><?php the_title(); ?></h5>
-                        <p class="card-text"><?php the_excerpt(); ?></p>
-                        <a href="<?php the_permalink(); ?>" class="btn btn-primary">En savoir plus</a>
-                    </div>
-                </div>
-            </div>
-            <?php
-        }
-    }
-    wp_reset_postdata();
-}
-
-
-
 register_deactivation_hook( __FILE__, 'partenaire_options_deactivate' );
 
 function partenaire_options_uninstall() {
@@ -271,6 +240,16 @@ function partenaire_options_uninstall() {
     // drop partenaire table if exists
     $partenaire_table_name = $wpdb->prefix . "partenaire";
     $wpdb->query("DROP TABLE IF EXISTS {$partenaire_table_name}");
+
+    // drop code_postal table if exits
+    $code_postal_table = $wpdb->prefix . "code_postal";
+    $wpdb->query("DROP TABLE IF EXISTS {$code_postal_table}");
+
+    // drop departement table if exists
+    $departement_postal_table = $wpdb->prefix . "departement";
+    $wpdb->query("DROP TABLE IF EXISTS {$departement_postal_table}");
+
+
 }
 
 register_uninstall_hook(__FILE__, 'partenaire_options_uninstall');
