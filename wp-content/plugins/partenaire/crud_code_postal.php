@@ -106,7 +106,7 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
     function get_bulk_actions()
     {
         $actions = array(
-            'delete' => 'Delete'
+            'delete' => 'Supprimer'
         );
         return $actions;
     }
@@ -144,7 +144,7 @@ class Custom_Table_Example_List_Table_CP extends WP_List_Table
        
         $this->process_bulk_action();
 
-        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name WHERE partenaire_id = $partenaire_id");
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;

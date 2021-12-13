@@ -26,7 +26,7 @@ function partenaire_options_install()
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $villes_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
+        id_ville int(11) NOT NULL AUTO_INCREMENT,
         Code_commune_INSEE int(11) NULL,
         Nom_commune varchar(255) NOT NULL,
         Code_postal varchar(255)  NULL,
@@ -41,7 +41,7 @@ function partenaire_options_install()
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $partenaire_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
+        id_partenaire int(11) NOT NULL AUTO_INCREMENT,
         name  varchar (50) NOT NULL,
         phone varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
@@ -57,7 +57,7 @@ function partenaire_options_install()
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $code_postal_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
+        id_code_postal int(11) NOT NULL AUTO_INCREMENT,
         code_postal varchar(255) NOT NULL,
         partenaire_id int(11) NOT NULL,
         PRIMARY KEY  (id)
@@ -70,7 +70,7 @@ function partenaire_options_install()
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $departement_table_name (
-        id int(11) NOT NULL AUTO_INCREMENT,
+        id_departement int(11) NOT NULL AUTO_INCREMENT,
         departement varchar(255) NOT NULL,
         partenaire_id int(11) NOT NULL,
         PRIMARY KEY  (id)

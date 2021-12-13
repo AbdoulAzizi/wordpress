@@ -33,8 +33,8 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
     {
 
         $actions = array(
-            'edit' => sprintf('<a href="?page=form_departement&id=%s">%s</a>', $item['id'], __('Éditer', 'wpbc')),
-            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s">%s</a>', $_REQUEST['page'], $item['id'], __('Supprimer', 'wpbc')),
+            'edit' => sprintf('<a href="?page=form_departement&id=%s&id_partenaire=%s">%s</a>', $item['id'], $_REQUEST['id_partenaire'], __('Éditer', 'partenaire')),
+            'delete' => sprintf('<a href="?page=%s&action=delete&id=%s&id_partenaire=%s">%s</a>', $_REQUEST['page'], $item['id'], $_REQUEST['id_partenaire'], __('Supprimer', 'partenaire')),
         );
 
         return sprintf('%s %s',
@@ -78,7 +78,7 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
     function get_bulk_actions()
     {
         $actions = array(
-            'delete' => 'Delete'
+            'delete' => 'Supprimer'
         );
         return $actions;
     }
@@ -115,7 +115,7 @@ class Custom_Table_Example_List_Table_Departement extends WP_List_Table
        
         $this->process_bulk_action();
 
-        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name WHERE partenaire_id = $partenaire_id");
 
 
         $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;

@@ -27,6 +27,8 @@ function wpbc_contacts_page_handler()
         $item_valid = wpbc_validate_contact($item);
         if ($item_valid === true) {
             if ($item['id'] == 0) {
+                // gérer la présence d'un apostrophe dans le nom
+                $item['name'] = __( stripslashes($item['name']) );
                 $result = $wpdb->insert($table_name, $item);
                 $item['id'] = $wpdb->insert_id;
                 if ($result) {
@@ -35,6 +37,7 @@ function wpbc_contacts_page_handler()
                     $notice = __('Erreur lors de l\'ajout du partenaire.', 'wpbc');
                 }
             } else {
+                $item['name'] = __( stripslashes($item['name']) );
                 $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
                 if ($result) {
                     $message = __('Partenaire mis à jour avec succès.', 'wpbc');

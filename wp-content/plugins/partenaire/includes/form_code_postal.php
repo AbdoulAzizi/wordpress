@@ -8,8 +8,16 @@ function wpbc_contacts_page_handler_cp()
 
     $table_name = $wpdb->prefix . 'code_postal'; 
     // var_dump($_REQUEST);
-
-    $message = $_REQUEST['success_create_message'] ?? '';
+    $success_create_message = 'Code postal ajouté avec succès';
+    $success_update_message = 'Code postal mis à jour avec succès';
+    if(isset($_REQUEST['create_code_postal'])){
+        $message = $success_create_message;
+    }elseif (isset($_REQUEST['update_code_postal'])) {
+        $message = $success_update_message;
+    }
+    else{
+        $message = '';
+    }
     
     $notice = '';
     $partenaire_id = $_REQUEST['id_partenaiire'];
@@ -97,10 +105,9 @@ function wpbc_contacts_form_page_handler_cp()
                             $notice_code_postal = __('Vous avez choisi le type d\'assignation par défaut, veuillez ne pas utiliser de virgule, de tiret ou d\'espace dans le code postal', 'wpbc');
                         }elseif(strlen($item['code_postal']) > 6){
                             $notice_code_postal = __('le code postal doit contenir au maximum 6 caractères', 'wpbc');
-                        }
-                      
-                        // vérifier le code postal ne contient pas de caractères spéciaux
-                        elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
+                        }elseif(code_postal_exist($item['code_postal'], $partenaire_id) == true){
+                            $notice_code_postal = __('Ce code postal est déjà assigné à ce partenaire', 'wpbc');
+                        }elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
                             $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
                         }else {
                             $result = $wpdb->insert($table_name, $item);
@@ -122,6 +129,9 @@ function wpbc_contacts_form_page_handler_cp()
                                     $ok = false;
                                 } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
                                     $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                                }elseif(code_postal_exist($value, $partenaire_id ) == true){
+                                    $notice_code_postal = __('Le code postal '.$value.' est déjà assigné à ce partenaire', 'wpbc');
+                                    $ok = false;
                                 }
                                 else{
                                 $item['code_postal'] = $value;
@@ -142,7 +152,7 @@ function wpbc_contacts_form_page_handler_cp()
                             }
                     }elseif ($type_assignation == 'cp_tranche') {
 
-                        
+                        $isert_validation = true;
                         if (strpos($item['code_postal'], '-') !== false) {
         
                             $cp_tranche = explode('-', $_REQUEST['code_postal']);
@@ -153,14 +163,26 @@ function wpbc_contacts_form_page_handler_cp()
                                 $notice_code_postal = __('chaque code postal doit contenir au maximum 6 caractères', 'wpbc');
                             } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
                                 $notice_code_postal = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                            }elseif(code_postal_exist($cp_tranche_debut, $partenaire_id ) == true ){
+                                $notice_code_postal = __('Le code postal '.$cp_tranche_debut.' est déjà assigné à ce partenaire', 'wpbc');
+                            }elseif(code_postal_exist($cp_tranche_fin, $partenaire_id ) == true ){
+                                $notice_code_postal = __('Le code postal '.$cp_tranche_fin.' est déjà assigné à ce partenaire', 'wpbc');
                             }
                             else{
 
                             for ($i=$cp_tranche_debut; $i <= $cp_tranche_fin; $i++) { 
                                 $item['code_postal'] = $i;
-                                $rows[] = $item;
+                                if(code_postal_exist($i, $partenaire_id ) == false){
+                                    $rows[] = $item;
+                                }else{
+                                    $notice_code_postal = __('Le code postal '.$i.' est déjà assigné à ce partenaire', 'wpbc');
+                                    $isert_validation = false;
+                                }
                             }
-                            $result = wp_insert_rows($rows, $table_name);
+                                if ($isert_validation) {
+                                    $result = wp_insert_rows($rows, $table_name);
+                                }
+            
                             }
                         }elseif (strpos($item['code_postal'], ',') !== false) {
                             $notice_code_postal = __('Vous avez choisi le type d\'assignation par tranche, veuillez ne pas utiliser de virgule dans le code postal', 'wpbc');
@@ -211,11 +233,11 @@ function wpbc_contacts_form_page_handler_cp()
 
             
             if ($result) {
-                $message = __('Code postal ajouté avec succès.', 'wpbc');
+                $message = __('success.', 'wpbc');
                ?>
                 <script>
                      let message = '<?php echo $message; ?>';
-                      window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$partenaire_id);?>' + '&success_create_message=' + message;
+                      window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$partenaire_id);?>' + '&create_code_postal=' + message;
                     </script>
                 <?php
             } else {
@@ -223,6 +245,8 @@ function wpbc_contacts_form_page_handler_cp()
                     $notice = $notice_type_assignation;
                 }elseif($notice_code_postal){
                     $notice = $notice_code_postal;
+                    $item['code_postal'] = $_REQUEST['code_postal'];
+
                 }else{
                 $notice = __('Erreur lors de l\'ajout du code postal.', 'wpbc');
                 }
@@ -230,7 +254,13 @@ function wpbc_contacts_form_page_handler_cp()
             } else {
                 $result = $wpdb->update($table_name, $item, array('id' => $item['id']));
                 if ($result) {
-                    $message = __('Code postal mis à jour avec succès.', 'wpbc');
+                    $message = __('success', 'wpbc');
+                    ?>
+                    <script>
+                        let message = '<?php echo $message; ?>';
+                        window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$partenaire_id);?>' + '&update_code_postal=' + message;
+                    </script>
+                    <?php
                 } else {
                     $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
                 }
@@ -358,6 +388,19 @@ function wpbc_contacts_form_meta_box_handler_cp($item)
     </div>
 </tbody>
 <?php
+}
+
+// fucntion code postal exist
+function code_postal_exist($code_postal, $id_partenaire){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'code_postal';
+    $sql = "SELECT * FROM $table_name WHERE code_postal = '$code_postal' AND partenaire_id = '$id_partenaire'";
+    $result = $wpdb->get_results($sql, ARRAY_A);
+    if(!empty($result)){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 function wp_insert_rows($row_arrays = array(), $wp_table_name, $update = false, $primary_key = null) {
