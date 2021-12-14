@@ -24,7 +24,7 @@ function partenaires_page_handler()
         
         $item = shortcode_atts($default, $_REQUEST);  
 
-        $item_valid = wpbc_validate_contact($item);
+        $item_valid = partenaires_validate_data($item);
         if ($item_valid === true) {
             if ($item['id_partenaire'] == 0) {
                 var_dump($item);
@@ -94,7 +94,7 @@ function partenaires_page_handler()
 <?php
 }
 
-function wpbc_contacts_form_page_handler()
+function partenaire_form_page_handler()
 {
     global $wpdb;
 

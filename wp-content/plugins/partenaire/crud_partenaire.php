@@ -4,43 +4,10 @@ defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/form_partenaire.php';
 
-function wpbc_custom_admin_styles() {
+function partenaires_custom_admin_styles() {
     wp_enqueue_style('custom-styles', plugins_url('/css/styles.css', __FILE__ ));
 	}
-add_action('admin_enqueue_scripts', 'wpbc_custom_admin_styles');
-
-
-function wpbc_plugin_load_textdomain() {
-load_plugin_textdomain( 'wpbc', false, basename( dirname( __FILE__ ) ) . '/languages' ); 
-}
-add_action( 'plugins_loaded', 'wpbc_plugin_load_textdomain' );
-
-
-global $wpbc_db_version;
-$wpbc_db_version = '1.1.0'; 
-
-
-
-function wpbc_install_data()
-{
-    global $wpdb;
-
-    $table_name = $wpdb->prefix . 'partenaire'; 
-
-}
-
-register_activation_hook(__FILE__, 'wpbc_install_data');
-
-
-function wpbc_update_db_check()
-{
-    global $wpbc_db_version;
-    if (get_site_option('wpbc_db_version') != $wpbc_db_version) {
-        wpbc_install();
-    }
-}
-
-add_action('plugins_loaded', 'wpbc_update_db_check');
+add_action('admin_enqueue_scripts', 'partenaires_custom_admin_styles');
 
 
 if (!class_exists('WP_List_Table')) {
@@ -177,7 +144,7 @@ class Partenaire_Custom_List_Table extends WP_List_Table
         $total_items = $wpdb->get_var("SELECT COUNT(id_partenaire) FROM $table_name");
 
 
-        $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
+        $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged'] - 1) * $per_page ): 0;
         $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'name';
         $order = (isset($_REQUEST['order']) && in_array($_REQUEST['order'], array('asc', 'desc'))) ? $_REQUEST['order'] : 'asc';
 
@@ -188,7 +155,7 @@ class Partenaire_Custom_List_Table extends WP_List_Table
         $this->set_pagination_args(array(
             'total_items' => $total_items, 
             'per_page' => $per_page,
-            'total_pages' => ceil($total_items / $per_page) 
+            'total_pages' => ceil($total_items / $per_page),
         ));
     }
 }
@@ -198,7 +165,7 @@ function partenaire_admin_menu()
     add_menu_page(__('Partenaires', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'partenaires_page_handler');
     add_submenu_page('Partenaires', __('Partenaires', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'partenaires_page_handler');
    
-    add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'wpbc_contacts_form_page_handler');
+    add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'partenaire_form_page_handler');
     add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_cp', 'code_postal_form_page_handler');
     add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_departement', 'departement_form_page_handler');
     add_submenu_page('null', __('Assigner code postal', 'wpbc'), __('Assigner code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
@@ -213,7 +180,7 @@ function partenaire_admin_menu()
 
 add_action('admin_menu', 'partenaire_admin_menu');
 
-function wpbc_validate_contact($item)
+function partenaires_validate_data($item)
 {
     $messages = array();
 
@@ -223,11 +190,3 @@ function wpbc_validate_contact($item)
     if (empty($messages)) return true;
     return implode('<br />', $messages);
 }
-
-
-function wpbc_languages()
-{
-    load_plugin_textdomain('wpbc', false, dirname(plugin_basename(__FILE__)));
-}
-
-add_action('init', 'wpbc_languages');

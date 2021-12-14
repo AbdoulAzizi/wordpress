@@ -125,7 +125,7 @@ class Villes_Custom_List_Table extends WP_List_Table
         $total_items = $wpdb->get_var("SELECT COUNT(id_ville) FROM $table_name");
 
 
-        $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
+        $paged = isset($_REQUEST['paged']) ? max(0, intval($_REQUEST['paged']- 1) * $per_page) : 0;
         $orderby = (isset($_REQUEST['orderby']) && in_array($_REQUEST['orderby'], array_keys($this->get_sortable_columns()))) ? $_REQUEST['orderby'] : 'id_ville';
         $order = (isset($_REQUEST['order']) && in_array($_REQUEST['order'], array('asc', 'desc'))) ? $_REQUEST['order'] : 'asc';
 
