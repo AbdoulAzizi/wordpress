@@ -1,6 +1,6 @@
 <?php
 
-function wpbc_contacts_page_handler_villes()
+function villes_page_handler_villes()
 {
     global $wpdb;
     
@@ -68,7 +68,7 @@ function wpbc_contacts_page_handler_villes()
 
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
         <h2>
-            <?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=form_villes');?>"><?php _e('Nouvelle ville', 'wpbc')?></a>
+            <?php _e('Liste des villes', 'wpbc')?> <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=form_villes');?>"><?php _e('Nouvelle ville', 'wpbc')?></a>
         </h2>
     
     <?php if (!empty($notice)): ?>
@@ -115,12 +115,12 @@ function form_page_handler_villes()
         }
     }
     
-    add_meta_box('contacts_form_meta_box', __('Informations de la ville', 'wpbc'), 'wpbc_contacts_form_meta_box_handler_villes', 'contact', 'normal', 'default');
+    add_meta_box('villes_form_meta_box', __('Informations de la ville', 'wpbc'), 'form_villes_handler', 'contact', 'normal', 'default');
 
     ?>
 <div class="wrap">
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-    <h2><?php _e('Partenaires', 'wpbc')?> <a class="add-new-h2"
+    <h2><?php _e('Ville', 'wpbc')?> <a class="add-new-h2"
                                 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_des_villes');?>"><?php _e('Retour à la liste', 'wpbc')?></a>
     </h2>
 
@@ -144,7 +144,7 @@ function form_page_handler_villes()
 <?php
 }
 
-function wpbc_contacts_form_meta_box_handler_villes($item)
+function form_villes_handler($item)
 {
     ?>
 <tbody >

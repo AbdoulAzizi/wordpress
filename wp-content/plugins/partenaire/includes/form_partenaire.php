@@ -1,6 +1,6 @@
 <?php
 
-function wpbc_contacts_page_handler()
+function partenaires_page_handler()
 {
     global $wpdb;
 
@@ -126,7 +126,7 @@ function wpbc_contacts_form_page_handler()
     
 
     
-    add_meta_box('contacts_form_meta_box', __('Coordonnées du partenaire', 'wpbc'), 'wpbc_contacts_form_meta_box_handler', 'contact', 'normal', 'default');
+    add_meta_box('partenaires_form_meta_box', __('Coordonnées du partenaire', 'wpbc'), 'partenaires_form_meta_box_handler', 'contact', 'normal', 'default');
 
     ?>
 <div class="wrap">
@@ -154,7 +154,7 @@ function wpbc_contacts_form_page_handler()
 <?php
 }
 
-function wpbc_contacts_form_meta_box_handler($item)
+function partenaires_form_meta_box_handler($item)
 {
     ?>
 <tbody >

@@ -298,7 +298,7 @@ function code_postal_form_page_handler()
         }
     }
 
-    add_meta_box('contacts_form_meta_box', __('Assignation du Code postal', 'wpbc'), 'wpbc_contacts_form_meta_box_handler_cp', 'contact', 'normal', 'default');
+    add_meta_box('code_postal_form_meta_box', __('Assignation du Code postal', 'wpbc'), 'code_postal_form_meta_box_handler', 'contact', 'normal', 'default');
     ?>
 <div class="wrap">
     <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
@@ -335,7 +335,7 @@ function code_postal_form_page_handler()
 <?php
 }
 
-function wpbc_contacts_form_meta_box_handler_cp($item)
+function code_postal_form_meta_box_handler($item)
 {
     
     ?>
