@@ -150,17 +150,44 @@ function departement_form_page_handler()
                 }
             }
             } else {
-                $result = $wpdb->update($table_name, $item, array('id_departement' => $item['id_departement']));
-                if ($result) {
-                    $message = __('success', 'wpbc');
-                    ?>
-                    <script>
-                     let message = '<?php echo $message; ?>';
-                      window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_departement&id_partenaire='.$partenaire_id);?>' + '&update_departement=' + message;
-                    </script>
-                    <?php
-                } else {
-                    $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
+                if (strlen($item['departement']) > 6){
+                    $notice = __('le Département doit contenir au maximum 6 caractères', 'wpbc');
+                } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['departement'])) {
+                    $notice = __('Veuillez ne pas utiliser de caractères spéciaux dans le code du Département', 'wpbc');
+                }else{
+
+                    if (strlen($item['departement']) == 5){
+                        $code_departement = substr($item['departement'], 0, 2);
+                        // update
+                        $item['departement'] = $code_departement;
+                        $result = $wpdb->update($table_name, $item, array('id_departement' => $item['id_departement']));
+                    }elseif (strlen($item['departement']) == 6){
+
+                        $code_departement = substr($item['departement'], 0, 3);
+                        // update
+                        $item['departement'] = $code_departement;
+                        $result = $wpdb->update($table_name, $item, array('id_departement' => $item['id_departement']));
+                    
+                    }
+                    else {
+                        $code_departement = substr($item['departement'], 0, 2);
+                        // update
+                        $item['departement'] = $code_departement;
+                        $result = $wpdb->update($table_name, $item, array('id_departement' => $item['id_departement']));
+                        
+                    }
+                
+                    if ($result) {
+                        $message = __('success', 'wpbc');
+                        ?>
+                        <script>
+                        let message = '<?php echo $message; ?>';
+                        window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_departement&id_partenaire='.$partenaire_id);?>' + '&update_departement=' + message;
+                        </script>
+                        <?php
+                    } else {
+                        $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
+                    }
                 }
             }
         } else {
@@ -226,6 +253,9 @@ function departement_form_meta_box_handler($item)
 	<div class="formdatabc">		
 
         <form>
+
+        <?php if(empty($item['id_departement'])){ ?>
+
             <h3><?php _e('Assignation du Département', 'wpbc')?></h3>
             <p> <?php _e('Vous pouvez soit saisir le code postal ou le code département', 'wpbc')?></p>
             <strong> <?php _e('Cas 1 : Saisir le code postal', 'wpbc')?></strong>
@@ -237,6 +267,8 @@ function departement_form_meta_box_handler($item)
             <strong> <?php _e('Cas 2 : Saisir le code département', 'wpbc')?></strong>
             <p> Par défaut le code département sera composé de 2 chiffres. <br>
                 Exemple: <b>75</b>  
+            
+        <?php } ?>
             
             <div class="form2bc">
                 <p>			

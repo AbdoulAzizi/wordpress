@@ -70,6 +70,8 @@ function code_postal_form_page_handler()
     $message = '';
     $notice = '';
     $partenaire_id = $_REQUEST['id_partenaire'];
+    $result = '';
+    $notice_type_assignation = '';
 
     $default = array(
         'id_code_postal' => 0,
@@ -255,17 +257,28 @@ function code_postal_form_page_handler()
                 }
             }
             } else {
-                $result = $wpdb->update($table_name, $item, array('id_code_postal' => $item['id_code_postal']));
-                if ($result) {
-                    $message = __('success', 'wpbc');
-                    ?>
-                    <script>
-                        let message = '<?php echo $message; ?>';
-                        window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$partenaire_id);?>' + '&update_code_postal=' + message;
-                    </script>
-                    <?php
-                } else {
-                    $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
+
+                if (strlen($item['code_postal']) > 6) {
+                    $notice = __('le code postal doit contenir au maximum 6 caractères', 'wpbc');
+                } elseif (preg_match('/[\'^£$%&*()}{@#~?><>|=_+¬.]/', $item['code_postal'])) {
+                    $notice = __('Veuillez ne pas utiliser de caractères spéciaux dans le code postal', 'wpbc');
+                }elseif(code_postal_exist($item['code_postal'], $partenaire_id)){
+                    $notice = __('Le code postal '.$item['code_postal'].' est déjà assigné à ce partenaire', 'wpbc');
+                }else{
+
+
+                    $result = $wpdb->update($table_name, $item, array('id_code_postal' => $item['id_code_postal']));
+                    if ($result) {
+                        $message = __('success', 'wpbc');
+                        ?>
+                        <script>
+                            let message = '<?php echo $message; ?>';
+                            window.location.href = '<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=liste_code_postal&id_partenaire='.$partenaire_id);?>' + '&update_code_postal=' + message;
+                        </script>
+                        <?php
+                    } else {
+                        $notice = __('Aucune modification n\'a été effectuée.', 'wpbc');
+                    }
                 }
             }
         } else {
