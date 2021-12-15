@@ -17,6 +17,7 @@ require plugin_dir_path( __FILE__ ) . 'crud_villes.php';
 require plugin_dir_path( __FILE__ ) . 'crud_departement.php';
 require plugin_dir_path( __FILE__ ) . 'metabox_code_postal.php';
 require plugin_dir_path( __FILE__ ) . 'metabox_departement.php';
+require plugin_dir_path( __FILE__ ) . 'settings.php';
 
 
 function partenaire_options_install()
@@ -116,6 +117,27 @@ function partenaire_options_install()
 // run the install scripts upon plugin activation
 register_activation_hook(__FILE__, 'partenaire_options_install');
 
+
+function partenaire_admin_menu()
+{
+    add_menu_page(__('Partenaires', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'partenaires_page_handler','dashicons-admin-settings');
+    add_submenu_page('Partenaires', __('Partenaires', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'partenaires_page_handler');
+   
+    add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'partenaire_form_page_handler');
+    add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_cp', 'code_postal_form_page_handler');
+    add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_departement', 'departement_form_page_handler');
+    add_submenu_page('null', __('Assigner code postal', 'wpbc'), __('Assigner code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
+    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'liste_code_postal', 'code_postal_page_handler');
+    add_submenu_page('null', __('Département', 'wpbc'), __('Département', 'wpbc'), 'activate_plugins', 'liste_departement', 'departement_page_handler');
+    add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 'manage_options', 'importation_des_villes', 'partenaire_admin_liste_des_villes');
+    add_submenu_page('partenaires', 'Liste des villes', 'Liste des villes', 'manage_options', 'liste_des_villes', 'villes_page_handler_villes');
+    add_submenu_page('null', __('Villes', 'wpbc'), __('Villes', 'wpbc'), 'activate_plugins', 'form_villes', 'form_page_handler_villes');
+    // add_submenu_page('partenaires','Configuration', 'Configuration', 'manage_options', 'configuration_modeles', 'generate_pages_modeles');
+
+
+}
+
+add_action('admin_menu', 'partenaire_admin_menu');
 
 /**
  * Deactivation hook.

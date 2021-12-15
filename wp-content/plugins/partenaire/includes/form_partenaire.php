@@ -27,7 +27,6 @@ function partenaires_page_handler()
         $item_valid = partenaires_validate_data($item);
         if ($item_valid === true) {
             if ($item['id_partenaire'] == 0) {
-                var_dump($item);
                 // gérer la présence d'un apostrophe dans le nom
                 $item['name'] = __( stripslashes($item['name']) );
                 $result = $wpdb->insert($table_name, $item);

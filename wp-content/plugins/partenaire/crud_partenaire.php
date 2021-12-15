@@ -1,6 +1,6 @@
 <?php
 
-defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
+defined( 'ABSPATH' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/form_partenaire.php';
 
@@ -160,25 +160,6 @@ class Partenaire_Custom_List_Table extends WP_List_Table
     }
 }
 
-function partenaire_admin_menu()
-{
-    add_menu_page(__('Partenaires', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'partenaires_page_handler');
-    add_submenu_page('Partenaires', __('Partenaires', 'wpbc'), __('Partenaires', 'wpbc'), 'activate_plugins', 'partenaires', 'partenaires_page_handler');
-   
-    add_submenu_page('partenaires', __('Ajouter un partenaire', 'wpbc'), __('Ajouter un partenaire', 'wpbc'), 'activate_plugins', 'contacts_form', 'partenaire_form_page_handler');
-    add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_cp', 'code_postal_form_page_handler');
-    add_submenu_page('null', __('Code Postal', 'wpbc'), __('CP', 'wpbc'), 'activate_plugins', 'form_departement', 'departement_form_page_handler');
-    add_submenu_page('null', __('Assigner code postal', 'wpbc'), __('Assigner code postal', 'wpbc'), 'activate_plugins', 'assign_code_postal', 'add_code_postal_page');
-    add_submenu_page('null', __('Associer code postal', 'wpbc'), __('Associer code postal', 'wpbc'), 'activate_plugins', 'liste_code_postal', 'code_postal_page_handler');
-    add_submenu_page('null', __('Département', 'wpbc'), __('Département', 'wpbc'), 'activate_plugins', 'liste_departement', 'departement_page_handler');
-    add_submenu_page('partenaires', 'Importer des villes', 'Importer des villes', 'manage_options', 'importation_des_villes', 'partenaire_admin_liste_des_villes');
-    add_submenu_page('partenaires', 'Liste des villes', 'Liste des villes', 'manage_options', 'liste_des_villes', 'villes_page_handler_villes');
-    add_submenu_page('null', __('Villes', 'wpbc'), __('Villes', 'wpbc'), 'activate_plugins', 'form_villes', 'form_page_handler_villes');
-
-
-}
-
-add_action('admin_menu', 'partenaire_admin_menu');
 
 function partenaires_validate_data($item)
 {

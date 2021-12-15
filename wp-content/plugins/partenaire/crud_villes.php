@@ -1,6 +1,6 @@
 <?php
 
-defined( 'ABSPATH' ) or die( '¡Sin trampas!' );
+defined( 'ABSPATH' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/form_villes.php';
 
