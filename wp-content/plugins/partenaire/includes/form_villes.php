@@ -81,7 +81,7 @@ function villes_page_handler_villes()
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
-        <input type="hidden" name="id_ville" value="<?php echo $_REQUEST['id_ville'] ?>"/>
+        <input type="hidden" name="id_ville" value="<?php if(isset($_REQUEST['id_ville'])) echo $_REQUEST['id_ville']; ?>"/>
         <?php $table->display() ?>
     </form>
 

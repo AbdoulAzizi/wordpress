@@ -85,7 +85,7 @@ function partenaires_page_handler()
 
     <form id="contacts-table" method="POST">
         <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
-        <input type="hidden" name="id_partenaire" value="<?php echo $_REQUEST['id_partenaire'] ?>"/>
+        <input type="hidden" name="id_partenaire" value="<?php if(isset($_REQUEST['id_partenaire'])) echo $_REQUEST['id_partenaire']; ?>"/>
         <?php $table->display() ?>
     </form>
 
