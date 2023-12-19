@@ -1,33 +1,44 @@
-div#contacts_form_meta_box.postbox {
-    width: auto;
-}
-
-div.form2bc {
-    display: flex;
-}
-
-div.form3bc {
-    display: flex;
-}
-
-div.form2bc input {
-    width: 100%;
-    margin-right: 30px;
-}
-
-div.form2bc p {
-    margin-right: 30px;
-}
-
-div.form3bc input {
-    width: 230px;
-    margin-right: 20px;
-}
-
-#addressbc {
-    width: 730px;
-}
-
-#notesbc {
-    width: 730px;
+
+ul.partenaires-list.openclose-list > li{ 
+	position: relative;
+    padding-left: 25px;
+	cursor:pointer;
+}
+
+ul.partenaires-list.openclose-list > li:before {
+    content: '+';
+	position: absolute;
+    left: 3px;
+    top: 2px;
+    display: block;
+    width: 20px;
+    height: 20px;
+    line-height: 21px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+ul.partenaires-list.openclose-list li.collapsed:before { content: '-';}
+ul.partenaires-list{
+	list-style: none;
+	margin:0px;
+	padding: 0px;
+}
+
+ul.partenaires-list.partenaires-list-departements.openclose-list li ul.partenaires-list.partenaires-list-villes {display:none;}
+ul.partenaires-list.partenaires-list-departements.openclose-list li ul.partenaires-list.partenaires-list-villes {
+	padding-left:25px;
+}
+
+/*TABLE-list STYLE*/
+ul.partenaires-list.openclose-list.table-list{ max-width: 600px; } 
+ul.partenaires-list.openclose-list.table-list li{ width: 100%;text-align:center; padding: 8px 0; } 
+ul.partenaires-list.openclose-list.table-list li.collapsed{padding-bottom: 0px;}
+ul.partenaires-list.openclose-list.table-list > li{ background-color: #FFF;border: 1px solid #ccc; margin-bottom: 15px;color: #000; } 
+ul.partenaires-list.openclose-list.table-list > li > ul { background-color: #f7f7f7;border-top: 1px solid #ccc;color: #000;padding : 0 8px;margin-top:8px;  }
+ul.partenaires-list.openclose-list.table-list > li > ul > li{ border-bottom: 1px solid #ccc;  }
+ul.partenaires-list.openclose-list.table-list > li > ul > li:last-child{ border-bottom: 0px solid #ccc;  }
+ul.partenaires-list.openclose-list.table-list > li:before {
+	content: " " !important;
 }
