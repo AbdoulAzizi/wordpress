@@ -624,25 +624,45 @@ function wpbc_contacts_page_handler_settings()
     //DETECT SENT
 
     $default = array(
-
-        'page_modele_departement' => 0,
-
-        'page_modele_ville' => 0,
-
+        'page_modele_departement[]' => array(0),
+        'page_modele_ville[]' => array(0),
     );
+    $pageModeleDepartement = get_option('_partenaires_model_page_departement', $default['page_modele_departement[]']);
+    $pageModeleVille = get_option('_partenaires_model_page_ville', $default['page_modele_ville[]']);
+
+    // var_dump($pageModeleVille);exit;
+
+    // if (isset($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], basename(__FILE__))) {
+    //     $item = shortcode_atts($default, $_REQUEST);
+    
+    //     // Sanitize and update options
+    //     $pageModeleDepartement = array_map('intval', $item['page_modele_departement[]']);
+    //     $pageModeleVille = array_map('intval', $item['page_modele_ville[]']);
+
+    //     // var_dump($item);
+    //     var_dump($item);exit;
+    
+    //     update_option('_partenaires_model_page_departement', $pageModeleDepartement);
+    //     update_option('_partenaires_model_page_ville', $pageModeleVille);
+    
+    //     $message = "Vos paramètres ont été mis à jour";
+    // }
 
     if (isset($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], basename(__FILE__))) {
+    // Récupérer les valeurs du formulaire
+    $pageModeleDepartement = isset($_POST['page_modele_departement']) ? array_map('intval', $_POST['page_modele_departement']) : array();
+    $pageModeleVille = isset($_POST['page_modele_ville']) ? array_map('intval', $_POST['page_modele_ville']) : array();
 
-        $item = shortcode_atts($default, $_REQUEST);
+    // var_dump($pageModeleDepartement);exit;
 
-        update_option('_partenaires_model_page_departement', $item['page_modele_departement']);
+    // Mettre à jour les options
+    update_option('_partenaires_model_page_departement', $pageModeleDepartement);
+    update_option('_partenaires_model_page_ville', $pageModeleVille);
 
-        update_option('_partenaires_model_page_ville', $item['page_modele_ville']);
+    $message = "Vos paramètres ont été mis à jour";
+}
 
-        $message = "Vos paramètres ont été mis à jour";
-
-    }
-
+    
     //BUTTON GENERATEvar_dump('ok');exit;
 
     ?>
@@ -673,69 +693,51 @@ function wpbc_contacts_page_handler_settings()
 
 
 
-	<form id="form" method="POST" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=settingspartenaires'); ?>" enctype="multipart/form-data">
+    <form id="form" method="POST" action="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=settingspartenaires'); ?>" enctype="multipart/form-data">
+    <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__)) ?>"/>
 
-        <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__)) ?>"/>
-
-
-
-        <div class="metabox-holder" id="poststuff">
-
-            <div id="post-body">
-
-                <div id="post-body-content">
-
-
-
-                   <p>
-
-					<?php $defaultValue = get_option('_partenaires_model_page_departement');?>
-
-						<label for="meta_box_code_postal_text">Page modèle département</label>
-
-						<select name="page_modele_departement" id="meta_box_page_modele_departement">
-
-							<option value="0">Ne pas générer de page département</option>
-
-						<?php foreach ($lst as $page) {?>
-
-							<option value="<?php echo $page->ID; ?>" <?php echo (($page->ID == $defaultValue) ? 'selected' : ''); ?>><?php echo $page->post_title; ?></option>
-
-						<?php }?>
-
-						</select>
-
-					</p>
-
-					<p>
-
-						<?php $defaultValue = get_option('_partenaires_model_page_ville');?>
-
-						<label for="meta_box_code_postal_text">Page modèle ville</label>
-
-						<select name="page_modele_ville" id="meta_box_page_modele_ville">
-
-						<option value="0">Ne pas générer de page ville</option>
-
-						<?php foreach ($lst as $page) {?>
-
-							<option value="<?php echo $page->ID; ?>" <?php echo (($page->ID == $defaultValue) ? 'selected' : ''); ?>><?php echo $page->post_title; ?></option>
-
-						<?php }?>
-
-						</select>
-
-					</p>
-
-                    <input type="submit" value="<?php _e('Enregistrer', 'wpbc')?>" id="submit" class="button-primary" name="submit">
-
+    <div id="page-models-container">
+        <?php foreach ($pageModeleDepartement as $index => $defaultValue): ?>
+            <div class="metabox-holder" data-index="<?php echo $index + 1; ?>">
+                <div class="postbox">
+                    <h2 class="hndle"><span>Page Modèle</span></h2>
+                    <div class="inside">
+                        <p>
+                            <label for="page_modele_departement_<?php echo $index + 1; ?>">Page modèle département</label>
+                            <select name="page_modele_departement[]" class="page-model-select">
+                                <option value="0" <?php selected($defaultValue, 0); ?>>Ne pas générer de page département</option>
+                                <?php foreach ($lst as $page) : ?>
+                                    <option value="<?php echo $page->ID; ?>" <?php selected($defaultValue, $page->ID); ?>><?php echo $page->post_title; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </p>
+                        <p>
+                            <label for="page_modele_ville_<?php echo $index + 1; ?>">Page modèle ville</label>
+                            <select name="page_modele_ville[]" class="page-model-select">
+                                <option value="0" <?php selected($pageModeleVille[$index], 0); ?>>Ne pas générer de page ville</option>
+                                <?php foreach ($lst as $page) : ?>
+                                    <option value="<?php echo $page->ID; ?>" <?php selected($pageModeleVille[$index], $page->ID); ?>><?php echo $page->post_title; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </p>
+                        <?php if ($index > 0): ?>
+                            <button type="button" class="button remove-model-button" style="float: right;">-</button>
+                        <?php endif; ?>
+                        &nbsp;&nbsp;
+                    </div>
                 </div>
-
             </div>
+        <?php endforeach; ?>
+    </div>
 
-        </div>
+    <button type="button" class="button add-model-button" style="float: right;">+</button>
 
-    </form>
+    <input type="submit" value="<?php _e('Enregistrer', 'wpbc')?>" id="submit" class="button-primary" name="submit">
+</form>
+
+
+
+
 
 	<div>
 
@@ -851,8 +853,6 @@ function wpbc_contacts_page_handler_settings()
 
 	function generateCitiesPages(batch){
 
-
-
 		 dt={action: "generate_cities_pages"};
 
 		 if(batch){
@@ -878,7 +878,6 @@ function wpbc_contacts_page_handler_settings()
             data : dt,
 
 			error: function(){
-
 				console.log('Erreur AJAX on reprends :'+jQuery('#resumtxt').val());
 
 				jQuery('#resumbtn').removeProp('disabled');
@@ -915,7 +914,7 @@ function wpbc_contacts_page_handler_settings()
 
 						IntervalJqoCity=false;
 
-						 alert("La génération estterminée");
+						 alert("La génération est terminée");
 
 
 
@@ -987,7 +986,6 @@ function wpbc_contacts_page_handler_settings()
 
                 // alert("Your vote could not be added");
 
-                alert(response);
 
             }
 
@@ -1114,9 +1112,13 @@ function _generate_database()
     }
 
 }
-
-function _generate_cities_pages()
-{
+function enqueue_custom_scripts() {
+    // Enregistrez le fichier JavaScript
+    wp_enqueue_script('custom-script', plugin_dir_url(__FILE__) . '/js/script.js', array('jquery'), '1.0', true);
+    
+}
+add_action('admin_enqueue_scripts', 'enqueue_custom_scripts');
+function _generate_cities_pages() {
 
     global $wpdb;
 
@@ -1124,198 +1126,136 @@ function _generate_cities_pages()
 
     _pp_deleteAllCache();
 
-    $defaultValue = get_option('_partenaires_model_page_ville', 0);
+    // Récupérer les valeurs de _partenaires_model_page_ville
+    $defaultValues = get_option('_partenaires_model_page_ville', array());
+  
+    if (empty($defaultValues)) {
+        echo "Les pages par défaut ne sont pas définies. La génération ne peut pas avoir lieu";
+        wp_die();
+    }
 
-    if ($defaultValue == 0) {
+    $perBatch = 1;
+    $batch = (isset($_POST['batch'])) ? (int) $_POST['batch'] : 1;
 
-        echo "La page par défaut n'est pas définis. La génération ne peut pas avoir lieu";
+    // Générer des pages pour chaque modèle
+    foreach ($defaultValues as $defaultValueID) {
 
-    } else {
+        // Vérifier si $defaultValueID est différent de zéro
+        if (!$defaultValueID || !is_numeric($defaultValueID) || $defaultValueID == 0) {
+            continue;
+        }
 
-        $row = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "posts WHERE ID = '$defaultValue'", ARRAY_A);
+        // Récupérer le modèle de page par défaut correspondant
+        $row = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "posts WHERE ID = '$defaultValueID'", ARRAY_A);
 
-        $perBatch = 1;
+        // Vérifier si le modèle de page par défaut existe
+        if (empty($row)) {
+            continue;
+        }
 
-        $batch = (isset($_POST['batch'])) ? (int) $_POST['batch'] : 1;
-
-        $cities = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS  v.code_insee,v.Code_postal, v.Nom_commune,c.partenaire_id FROM " . $wpdb->prefix . "villes_france v INNER JOIN " . $wpdb->prefix . "code_postal c ON(c.code_postal=v.code_insee) WHERE 1 group by code_insee ORDER BY code_insee DESC LIMIT " . (($batch - 1) * $perBatch) . "," . $perBatch, ARRAY_A);
-
-        // $cities= $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS  code_insee,Code_postal, Nom_commune FROM ".$wpdb->prefix . "villes_france WHERE 1 group by code_insee ORDER BY code_insee DESC", ARRAY_A);
+        $cities = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS v.code_insee,v.Code_postal, v.Nom_commune,c.partenaire_id FROM " . $wpdb->prefix . "villes_france v INNER JOIN " . $wpdb->prefix . "code_postal c ON(c.code_postal=v.code_insee) WHERE 1 group by code_insee ORDER BY code_insee DESC LIMIT " . (($batch - 1) * $perBatch) . "," . $perBatch, ARRAY_A);
 
         $nb = $wpdb->get_results("SELECT FOUND_ROWS() AS nombre_article;", ARRAY_A);
 
-        $totalBatch = ceil($nb[0]['nombre_article'] / $perBatch);
+        // $totalBatch = ceil($nb[0]['nombre_article'] / $perBatch);
+        $totalBatch = 12;
 
         $cityNb = 0;
 
-        foreach ($cities as $city) {
+        if (!empty($cities)) {
+            foreach ($cities as $city) {
+                $city['code_insee'] = explode('-', $city['code_insee']);
 
-            $city['code_insee'] = explode('-', $city['code_insee']);
+                foreach ($city['code_insee'] as $cp) {
+                    $partner = $wpdb->get_row("SELECT p.* FROM " . $wpdb->prefix . "partenaire p WHERE p.id='" . $city['partenaire_id'] . "'", ARRAY_A);
 
-            foreach ($city['code_insee'] as $cp) {
-
-                $partner = $wpdb->get_row("SELECT p.* FROM " . $wpdb->prefix . "partenaire p WHERE p.id='" . $city['partenaire_id'] . "'", ARRAY_A);
-
-                if (is_null($partner) || (is_array($partner) && sizeof($partner) == 0)) {
-                    $partner = false;
-                }
-
-                // if($partner===false){
-
-                // $partner= $wpdb->get_results("SELECT p.* FROM ".$wpdb->prefix . "code_postal c INNER JOIN ".$wpdb->prefix . "partenaire p ON (c.partenaire_id=p.id) WHERE c.code_postal=LEFT('".$cp."',LENGTH(c.code_postal)) AND LENGTH(c.code_postal)<4", ARRAY_A);
-
-                // if(is_null($partner) || (is_array($partner) && sizeof($partner)==0)) $partner=false;
-
-                // }
-
-                // if($partner!==false){
-
-                // var_dump('------');
-
-                // var_dump($cp);
-
-                // var_dump($city['Nom_commune']);
-
-                // var_dump($partner['id']);
-
-                // $partner= $wpdb->get_row("SELECT p.* FROM ".$wpdb->prefix . "code_postal c INNER JOIN ".$wpdb->prefix . "partenaire p ON (c.partenaire_id=p.id) WHERE c.code_postal='".$cp."'", ARRAY_A);
-
-                // if(is_null($partner) || (is_array($partner) && sizeof($partner)==0)) $partner=false;
-
-                // if($partner!==false){
-
-                // var_dump('departement');
-
-                // }else{
-
-                // var_dump('region');
-
-                // }
-
-                // }
-
-                // if($batch==8) var_dump($cp);
-
-                // if($cp==11081){
-
-                // var_dump($partner);
-
-                // }
-
-                if ($partner !== false) {
-
-                    // if($cp==11081){
-
-                    // var_dump($cp);
-
-                    // var_dump($partner);
-
-                    // }
-
-                    $params = array(
-
-                        'zip_code' => $city['Code_postal'],
-
-                        'code_insee' => $cp,
-
-                        'code_departement' => substr($cp, 0, strlen($cp) - 3),
-
-                        'city' => $city['Nom_commune'],
-
-                        'partenaire_email' => $partner['email'],
-
-                        'partenaire_tel' => $partner['phone'],
-
-                        'partenaire_tel_second' => $partner['phone_second'],
-
-                        'partenaire_nom' => $partner['name'],
-
-                        'partenaire_siret' => $partner['siret'],
-
-                    );
-
-                    // var_dump('1');
-
-                    //REPLACE WITH GOOD PARAMETERS
-
-                    $my_post = array(
-
-                        'post_title' => _parseWithParams($row['post_title'], $params),
-
-                        // 'post_name'    => sanitize_title_with_dashes(_parseWithParams($row['post_title'],$params),'','save'),
-
-                        'post_content' => _parseWithParams($row['post_content'], $params),
-
-                        'post_status' => 'publish',
-
-                        'post_author' => $row['post_author'],
-
-                        'post_category' => wp_get_post_categories($defaultValue, array('fields' => 'ids')),
-
-                        'post_type' => 'page',
-
-                    );
-
-                    $post = $wpdb->get_row('SELECT post_id FROM ' . $wpdb->prefix . 'postmeta where meta_value="' . $cp . '" and meta_key=\'meta_box_code_postal_text\'');
-
-                    // var_dump($post);
-
-                    // var_dump('2');
-
-                    if (is_null($post)) {
-
-                        // var_dump('create');
-
-                        $idP = wp_insert_post($my_post);
-
-                    } else {
-
-                        // var_dump('update');
-
-                        $idP = $my_post['ID'] = $post->post_id;
-
-                        wp_update_post($my_post);
-
+                    if (is_null($partner) || (is_array($partner) && sizeof($partner) == 0)) {
+                        $partner = false;
                     }
 
-                    $lstMeta = get_post_meta($defaultValue);
+                    if ($partner !== false) {
+                        $params = array(
+                            'zip_code' => $city['Code_postal'],
+                            'code_insee' => $cp,
+                            'code_departement' => substr($cp, 0, strlen($cp) - 3),
+                            'city' => $city['Nom_commune'],
+                            'partenaire_email' => $partner['email'],
+                            'partenaire_tel' => $partner['phone'],
+                            'partenaire_tel_second' => $partner['phone_second'],
+                            'partenaire_nom' => $partner['name'],
+                            'partenaire_siret' => $partner['siret'],
+                        );
 
-                    //REPALCE POST METADATAS
+                        $my_post = array(
+                            'post_title' => _parseWithParams($row['post_title'], $params),
+                            'post_content' => _parseWithParams($row['post_content'], $params),
+                            'post_status' => 'publish',
+                            'post_author' => $row['post_author'],
+                            'post_category' => wp_get_post_categories($defaultValueID, array('fields' => 'ids')),
+                            'post_type' => 'page',
+                        );
 
-                    foreach ($lstMeta as $metaKey => $metaVal) {
+                        $meta_key = 'meta_box_code_postal_text_' . $defaultValueID;
+                        $post = $wpdb->get_row($wpdb->prepare(
+                            'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key LIKE %s',
+                            $cp,
+                            '%meta_box_code_postal_text%'
+                        ));
 
-                        update_post_meta($idP, $metaKey, _parseWithParams($metaVal[0], $params));
+                        if (is_null($post)) {
+                            $idP = wp_insert_post($my_post);
+                        } else {
+                            // Vérifiez si le meta_key a déjà le préfixe
+                            if (strpos($post->meta_key, $meta_key) === false) {
+                                // Mettez à jour le meta_key avec le préfixe
+                                $wpdb->update(
+                                    $wpdb->prefix . 'postmeta',
+                                    array('meta_key' => $meta_key),
+                                    array('post_id' => $post->post_id, 'meta_key' => $post->meta_key)
+                                );
+                            }
+
+                            $idP = $my_post['ID'] = $post->post_id;
+                            wp_update_post($my_post);
+                        }
+                        // $lstMeta = get_post_meta($defaultValueID);
+
+                        // if (is_array($lstMeta) && sizeof($lstMeta) > 0) {
+                        //     foreach ($lstMeta as $metaKey => $metaVal) {
+                        //         update_post_meta($idP, $metaKey, _parseWithParams($metaVal[0], $params));
+                        //     }
+                        // }
+
+                        // update_post_meta($idP, 'meta_box_code_postal_text', $cp);
+
+                        $lstMeta = get_post_meta($defaultValueID);
+
+                        if (is_array($lstMeta) && sizeof($lstMeta) > 0) {
+                            foreach ($lstMeta as $metaKey => $metaVal) {
+                                // Ajoutez le préfixe du $defaultValueID au meta_key
+                                $meta_key = $metaKey . '_' . $defaultValueID;
+                                update_post_meta($idP, $meta_key, _parseWithParams($metaVal[0], $params));
+                            }
+                        }
+
+                        // Ajoutez le préfixe du $defaultValueID au meta_key 'meta_box_code_postal_text'
+                        $meta_key_code_postal = 'meta_box_code_postal_text_' . $defaultValueID;
+                        update_post_meta($idP, $meta_key_code_postal, $cp);
 
                     }
-
-                    update_post_meta($idP, 'meta_box_code_postal_text', $cp);
-
                 }
 
+                $cityNb++;
             }
-
-            $cityNb++;
-
         }
-
     }
 
     $t = new \stdClass();
-
     $t->batch = $batch;
-
     $t->totalBatch = $totalBatch;
-
     header('Content-Type: application/json; charset=utf-8');
-
     echo json_encode($t);
-
-    // var_dump($cityNb);
-
-    // Don't forget to stop execution afterward.
-
     wp_die();
-
 }
 
 function _parseWithParams($r, $params)
@@ -1337,114 +1277,116 @@ function _parseWithParams($r, $params)
 
 function _generate_departments_pages()
 {
-
     global $wpdb;
-
     set_time_limit(0);
-
     _pp_deleteAllCache();
 
-    $defaultValue = get_option('_partenaires_model_page_departement');
+    // Récupérer les valeurs de _partenaires_model_page_departement
+    $defaultValues = get_option('_partenaires_model_page_departement', array());
 
-    if ($defaultValue == 0) {
+    if (empty($defaultValues)) {
+        echo "Les pages par défaut ne sont pas définies. La génération ne peut pas avoir lieu";
+        wp_die();
+    }
 
-        echo "La page par défaut n'est pas définis. La génération ne peut pas avoir lieu";
+    $perBatch = 1;
+    $batch = (isset($_POST['batch'])) ? (int)$_POST['batch'] : 1;
 
-    } else {
+    // Générer des pages pour chaque modèle
+    foreach ($defaultValues as $defaultValueID) {
 
-        $row = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "posts WHERE ID = '$defaultValue'", ARRAY_A);
+        // Vérifier si $defaultValueID est différent de zéro
+        if (!$defaultValueID || !is_numeric($defaultValueID) || $defaultValueID == 0) {
+            continue;
+        }
+
+        // Récupérer le modèle de page par défaut correspondant
+        $row = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "posts WHERE ID = '$defaultValueID'", ARRAY_A);
+
+        // Vérifier si le modèle de page par défaut existe
+        if (empty($row)) {
+            continue;
+        }
 
         $departments = $wpdb->get_results("SELECT * FROM " . $wpdb->prefix . "department_france WHERE 1", ARRAY_A);
 
+        $totalBatch = count($departments);
+
         $departmentNb = 0;
 
+        // Générer des pages pour chaque département
         foreach ($departments as $department) {
-
             $partner = $wpdb->get_row("SELECT p.* FROM " . $wpdb->prefix . "code_postal c INNER JOIN " . $wpdb->prefix . "partenaire p ON (c.partenaire_id=p.id) WHERE c.code_postal='" . str_pad($department['code_department'], 2, '0', STR_PAD_LEFT) . "' AND LENGTH(c.code_postal)<4", ARRAY_A);
-
-            //
 
             if (is_null($partner) || (is_array($partner) && sizeof($partner) == 0)) {
                 $partner = false;
             }
 
             if ($partner !== false) {
-
                 $params = array(
-
                     'code_departement' => str_pad(str_replace(' ', '', $department['code_department']), 2, '0', STR_PAD_LEFT),
-
                     'nom_departement' => $department['nom_department'],
-
                     'partenaire_email' => $partner['email'],
-
                     'partenaire_tel' => $partner['phone'],
-
                     'partenaire_tel_second' => $partner['phone_second'],
-
                     'partenaire_nom' => $partner['name'],
-
                     'partenaire_siret' => $partner['siret'],
-
                 );
-
-                // var_dump("SELECT p.* FROM ".$wpdb->prefix . "code_postal c INNER JOIN ".$wpdb->prefix . "partenaire p ON (c.partenaire_id=p.id) WHERE c.code_postal='".str_pad($department['code_department'],2,'0',STR_PAD_LEFT)."' AND LENGTH(c.code_postal)<4");
-
-                //REPLACE WITH GOOD PARAMETERS
 
                 $my_post = array(
-
                     'post_title' => _parseWithParams($row['post_title'], $params),
-
                     'post_content' => _parseWithParams($row['post_content'], $params),
-
                     'post_status' => 'publish',
-
                     'post_author' => $row['post_author'],
-
-                    'post_category' => wp_get_post_categories($defaultValue, array('fields' => 'ids')),
-
+                    'post_category' => wp_get_post_categories($defaultValueID, array('fields' => 'ids')),
                     'post_type' => 'page',
-
                 );
 
-                $post = $wpdb->get_row('SELECT post_id FROM ' . $wpdb->prefix . 'postmeta where meta_value="' . $department['code_department'] . '" and meta_key=\'meta_box_text_departement\'');
+                $meta_key = 'meta_box_code_departement_text_' . $defaultValueID;
+                $post = $wpdb->get_row($wpdb->prepare(
+                    'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key LIKE %s',
+                    $department['code_department'],
+                    '%meta_box_code_departement_text%'
+                ));
 
                 if (is_null($post)) {
-
                     $idP = wp_insert_post($my_post);
-
                 } else {
+                    // Vérifiez si le meta_key a déjà le préfixe
+                    if (strpos($post->meta_key, $meta_key) === false) {
+                        // Mettez à jour le meta_key avec le préfixe
+                        $wpdb->update(
+                            $wpdb->prefix . 'postmeta',
+                            array('meta_key' => $meta_key),
+                            array('post_id' => $post->post_id, 'meta_key' => $post->meta_key)
+                        );
+                    }
 
                     $idP = $my_post['ID'] = $post->post_id;
-
                     wp_update_post($my_post);
-
                 }
 
-                $lstMeta = get_post_meta($defaultValue);
-
-                //REPALCE POST METADATAS
+                $lstMeta = get_post_meta($defaultValueID);
 
                 foreach ($lstMeta as $metaKey => $metaVal) {
-
                     update_post_meta($idP, $metaKey, _parseWithParams($metaVal[0], $params));
-
                 }
 
-                update_post_meta($idP, 'meta_box_text_departement', $department['code_department']);
-
+                update_post_meta($idP, 'meta_box_code_departement_text', $department['code_department']);
             }
 
             $departmentNb++;
-
         }
-
     }
 
+    $t = new \stdClass();
+    $t->batch = $batch;
+    $t->totalBatch = $totalBatch;
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($t);
     wp_die();
-
 }
+
 
 add_shortcode('liste_villes', '_shortcode_liste_villes');
 
