@@ -1157,8 +1157,7 @@ function _generate_cities_pages() {
 
         $nb = $wpdb->get_results("SELECT FOUND_ROWS() AS nombre_article;", ARRAY_A);
 
-        // $totalBatch = ceil($nb[0]['nombre_article'] / $perBatch);
-        $totalBatch = 12;
+        $totalBatch = ceil($nb[0]['nombre_article'] / $perBatch);
 
         $cityNb = 0;
 
