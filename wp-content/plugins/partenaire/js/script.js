@@ -58,3 +58,24 @@ $(document).on('click', '.remove-model-button', function() {
     $(this).closest('.metabox-holder').remove();
 });
 
+   // Gérer la sélection/désélection de tous les modèles
+   $('#select-all-models').change(function() {
+    var isChecked = $(this).prop('checked');
+    $('.select-model').prop('checked', isChecked);
+});
+
+// Gérer la sélection/désélection individuelle des modèles
+$(document).on('change', '.select-model', function() {
+    var allChecked = $('.select-model:checked').length === $('.select-model').length;
+    $('#select-all-models').prop('checked', allChecked);
+});
+
+// $('#form').submit(function(event) {
+//   // Vérifiez si au moins une case à cocher est cochée
+//   if ($('.select-model:checked').length === 0) {
+//       // Aucune case n'est cochée, affichez un message d'alerte
+//       alert('Veuillez sélectionner au moins un modèle avant de soumettre le formulaire.');
+//       // Empêchez le formulaire de se soumettre
+//       event.preventDefault();
+//   }
+// });
