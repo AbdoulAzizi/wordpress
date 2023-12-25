@@ -1371,7 +1371,7 @@ function _generate_departments_pages()
                     update_post_meta($idP, $metaKey, _parseWithParams($metaVal[0], $params));
                 }
 
-                update_post_meta($idP, 'meta_box_code_departement_text', $department['code_department']);
+                update_post_meta($idP, $meta_key, $department['code_department']);
             }
 
             $departmentNb++;
