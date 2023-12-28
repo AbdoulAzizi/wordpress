@@ -23,41 +23,54 @@ $(document).ready(function () {
 });
 
 $(document).on('click', '.add-model-button', function() {
-    var container = $('#page-models-container');
-    var index = container.find('.metabox-holder').length + 1;
+  var container = $('#page-models-container');
+  var index = container.find('.metabox-holder').length + 1;
 
-    // Cloner le dernier modèle de page
-    var newModel = container.find('.metabox-holder:last').clone(true, true);
+  // Cloner le dernier modèle de page
+  var lastModel = container.find('.metabox-holder:last');
+  var newModel = lastModel.clone(true, true);
 
-    // Mettre à jour l'index dans les nouveaux éléments
-    newModel.attr('data-index', index);
+  // Mettre à jour l'index dans les nouveaux éléments
+  newModel.attr('data-index', index);
 
-    // Mettre à jour le texte du titre du modèle
-    // newModel.find('.hndle span').text('Page Modèle ' + index);
-    newModel.find('.hndle span').html('<input type="checkbox" name="selected_models[]" class="select-model" value="' + index + '"> Page Modèle ' + index);
+  // Mettre à jour le texte du titre du modèle
+  newModel.find('.hndle span').html('<input type="checkbox" name="selected_models[]" class="select-model" value="' + (index - 1) + '"> Page Modèle ' + index);
+  
+  // Mettre à jour les noms des champs de sélection
+  newModel.find('[name^="page_modele_departement"]').attr('name', 'page_modele_departement[' +(index - 1) + ']');
+  newModel.find('[name^="page_modele_ville"]').attr('name', 'page_modele_ville[' + (index - 1)   + ']');
 
+  // Réinitialiser les valeurs sélectionnées
+  newModel.find('select').val(0);
 
-    // // Mettre à jour les noms des champs de sélection
-    // newModel.find('[name^="page_modele_departement"]').attr('name', 'page_modele_departement[]');
-    // newModel.find('[name^="page_modele_ville"]').attr('name', 'page_modele_ville[]');
+  // Copier l'état du checkbox du dernier modèle
+  var lastCheckbox = lastModel.find('.select-model');
+  var newCheckbox = newModel.find('.select-model');
+  newCheckbox.prop('checked', lastCheckbox.prop('checked'));
 
-    // Réinitialiser les valeurs sélectionnées
-    // newModel.find('select').val(0);
+   // Copier l'état des champs de sélection du dernier modèle
+   var lastDepartementSelect = lastModel.find('[name^="page_modele_departement"]');
+   var newDepartementSelect = newModel.find('[name^="page_modele_departement"]');
+   newDepartementSelect.val(lastDepartementSelect.val());
 
-    // Supprimer le bouton "moins" du modèle cloné
-    newModel.find('.remove-model-button').remove();
+   var lastVilleSelect = lastModel.find('[name^="page_modele_ville"]');
+   var newVilleSelect = newModel.find('[name^="page_modele_ville"]');
+   newVilleSelect.val(lastVilleSelect.val());
 
-    // Ajouter le nouveau modèle à la page
-    container.append(newModel);
+  // Supprimer le bouton "moins" du modèle cloné
+  newModel.find('.remove-model-button').remove();
 
-    // Ajouter le bouton "moins" uniquement si plus d'un modèle est présent
-    if (index > 1) {
-        var removeButton = $('<button type="button" class="button remove-model-button" style="float: right;">-</button>');
-        removeButton.click(function() {
-            $(this).closest('.metabox-holder').remove();
-        });
-        newModel.find('.inside').append(removeButton);
-    }
+  // Ajouter le nouveau modèle à la page
+  container.append(newModel);
+
+  // Ajouter le bouton "moins" uniquement si plus d'un modèle est présent
+  if (index > 1) {
+      var removeButton = $('<button type="button" class="button remove-model-button" style="float: right;">-</button>');
+      removeButton.click(function() {
+          $(this).closest('.metabox-holder').remove();
+      });
+      newModel.find('.inside').append(removeButton);
+  }
 });
 
 
