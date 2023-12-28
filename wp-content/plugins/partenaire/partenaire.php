@@ -721,8 +721,24 @@ function wpbc_contacts_page_handler_settings()
 
 	<?php
 
-    $lst = (get_pages(array('post_status' => 'private,draft', 'meta_query' => array('template_clause' => array('key' => 'meta_box_code_postal_text', 'value' => '', 'compare' => '='), 'relation' => 'OR', array('key' => 'meta_box_code_postal_text', 'compare' => 'NOT EXISTS')))));
+    // $lst = (get_pages(array('post_status' => 'private,draft', 'meta_query' => array('template_clause' => array('key' => 'meta_box_code_postal_text', 'value' => '', 'compare' => '='), 'relation' => 'OR', array('key' => 'meta_box_code_postal_text', 'compare' => 'NOT EXISTS')))));
 
+    $lst = get_pages(array(
+        'post_status' => 'private,draft',
+        'meta_query' => array(
+            'template_clause' => array(
+                'key' => 'meta_box_code_postal_text',
+                'value' => '',
+                'compare' => '=',
+            ),
+            'relation' => 'OR',
+            array(
+                'key' => 'meta_box_code_postal_text',
+                'compare' => 'NOT EXISTS',
+            ),
+        ),
+    ));
+    
     if (!empty($notice)): ?>
 
     <div id="notice" class="error"><p><?php echo $notice ?></p></div>
@@ -746,7 +762,7 @@ function wpbc_contacts_page_handler_settings()
             <label for="select-all-models">Sélectionner tous les modèles</label>
         </div>
         <?php foreach ($pageModeleDepartement as $index => $defaultValue): ?>
-            <div class="metabox-holder" data-index="<?php echo $index + 1; ?>">
+            <div class="metabox-holder" data-index="<?php echo $index; ?>">
                 <div class="postbox">
                     <h2 class="hndle">
                         <span>

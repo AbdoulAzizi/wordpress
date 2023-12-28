@@ -31,11 +31,18 @@ $(document).on('click', '.add-model-button', function() {
 
     // Mettre à jour l'index dans les nouveaux éléments
     newModel.attr('data-index', index);
-    newModel.find('[name^="page_modele_departement"]').attr('name', 'page_modele_departement[' + index + ']');
-    newModel.find('[name^="page_modele_ville"]').attr('name', 'page_modele_ville[' + index + ']');
+
+    // Mettre à jour le texte du titre du modèle
+    // newModel.find('.hndle span').text('Page Modèle ' + index);
+    newModel.find('.hndle span').html('<input type="checkbox" name="selected_models[]" class="select-model" value="' + index + '"> Page Modèle ' + index);
+
+
+    // // Mettre à jour les noms des champs de sélection
+    // newModel.find('[name^="page_modele_departement"]').attr('name', 'page_modele_departement[]');
+    // newModel.find('[name^="page_modele_ville"]').attr('name', 'page_modele_ville[]');
 
     // Réinitialiser les valeurs sélectionnées
-    newModel.find('select').val(0);
+    // newModel.find('select').val(0);
 
     // Supprimer le bouton "moins" du modèle cloné
     newModel.find('.remove-model-button').remove();
@@ -52,6 +59,7 @@ $(document).on('click', '.add-model-button', function() {
         newModel.find('.inside').append(removeButton);
     }
 });
+
 
 // Fonction pour gérer la suppression de modèles de page existants
 $(document).on('click', '.remove-model-button', function() {
