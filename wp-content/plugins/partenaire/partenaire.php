@@ -1327,16 +1327,28 @@ function _generate_cities_pages() {
                         );
 
                         $meta_key = 'meta_box_code_postal_text_' . $defaultValueID;
-                        $post = $wpdb->get_row($wpdb->prepare(
-                            'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key LIKE %s',
-                            $cp,
-                            '%meta_box_code_postal_text%'
-                        ));
 
+                        // Rechercher le post avec le meta_key spécifique
+                        $post = $wpdb->get_row($wpdb->prepare(
+                            'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key = %s',
+                            $cp,
+                            $meta_key
+                        ));
+                        
                         if (is_null($post)) {
+                            // Le post avec le meta_key spécifique n'existe pas, essayez avec 'meta_box_code_postal_text'
+                            $post = $wpdb->get_row($wpdb->prepare(
+                                'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key = %s',
+                                $cp,
+                                'meta_box_code_postal_text'
+                            ));
+                        }
+                        
+                        if (is_null($post)) {
+                            // Aucun post trouvé, créer un nouveau
                             $idP = wp_insert_post($my_post);
                         } else {
-                            // Vérifiez si le meta_key a déjà le préfixe
+                            // Vérifier si le meta_key a déjà le préfixe
                             if (strpos($post->meta_key, $meta_key) === false) {
                                 // Mettez à jour le meta_key avec le préfixe
                                 $wpdb->update(
@@ -1345,10 +1357,12 @@ function _generate_cities_pages() {
                                     array('post_id' => $post->post_id, 'meta_key' => $post->meta_key)
                                 );
                             }
-
+                        
+                            // Mettre à jour le post
                             $idP = $my_post['ID'] = $post->post_id;
                             wp_update_post($my_post);
                         }
+                        
                         // $lstMeta = get_post_meta($defaultValueID);
 
                         // if (is_array($lstMeta) && sizeof($lstMeta) > 0) {
@@ -1473,18 +1487,29 @@ function _generate_departments_pages()
                     'post_category' => wp_get_post_categories($defaultValueID, array('fields' => 'ids')),
                     'post_type' => 'page',
                 );
-
                 $meta_key = 'meta_box_code_departement_text_' . $defaultValueID;
-                $post = $wpdb->get_row($wpdb->prepare(
-                    'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key LIKE %s',
-                    $department['code_department'],
-                    '%meta_box_code_departement_text%'
-                ));
 
+                // Rechercher le post avec le meta_key spécifique
+                $post = $wpdb->get_row($wpdb->prepare(
+                    'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key = %s',
+                    $department['code_department'],
+                    $meta_key
+                ));
+                
                 if (is_null($post)) {
+                    // Le post avec le meta_key spécifique n'existe pas, essayez avec 'meta_box_code_departement_text'
+                    $post = $wpdb->get_row($wpdb->prepare(
+                        'SELECT post_id, meta_key FROM ' . $wpdb->prefix . 'postmeta WHERE meta_value = %s AND meta_key = %s',
+                        $department['code_department'],
+                        'meta_box_code_departement_text'
+                    ));
+                }
+                
+                if (is_null($post)) {
+                    // Aucun post trouvé, créer un nouveau
                     $idP = wp_insert_post($my_post);
                 } else {
-                    // Vérifiez si le meta_key a déjà le préfixe
+                    // Vérifier si le meta_key a déjà le préfixe
                     if (strpos($post->meta_key, $meta_key) === false) {
                         // Mettez à jour le meta_key avec le préfixe
                         $wpdb->update(
@@ -1493,10 +1518,12 @@ function _generate_departments_pages()
                             array('post_id' => $post->post_id, 'meta_key' => $post->meta_key)
                         );
                     }
-
+                
+                    // Mettre à jour le post
                     $idP = $my_post['ID'] = $post->post_id;
                     wp_update_post($my_post);
                 }
+                
 
                 $lstMeta = get_post_meta($defaultValueID);
 
