@@ -638,7 +638,7 @@ function wpbc_contacts_page_handler_settings()
  
     // Récupérer les états des boutons checkboxes
     $selectedModels = get_option('_partenaires_selected_models', array());
-  
+
   
     // Vérifier si $pageModeleDepartement n'est pas déjà un tableau
     if (!is_array($pageModeleDepartement)) {
@@ -675,6 +675,8 @@ function wpbc_contacts_page_handler_settings()
     $pageModeleVille = isset($_POST['page_modele_ville']) ? array_map('intval', $_POST['page_modele_ville']) : array();
     $selectedModels = isset($_POST['selected_models']) ? $_POST['selected_models'] : array();
 
+    $selectedPageModeleDepartement = array();
+    $selectedPageModeleVille = array();
     if (!empty($_POST['selected_models'])) {
         foreach ($_POST['selected_models'] as $index) {
             // Vérifier si les champs sont définis pour ce modèle
@@ -687,7 +689,7 @@ function wpbc_contacts_page_handler_settings()
                 $selectedPageModeleVille[] = $_POST['page_modele_ville'][$index];
             }
         }
-
+        
          // supprimer les valeurs double
         $selectedPageModeleDepartement = array_unique($selectedPageModeleDepartement);
         $selectedPageModeleVille = array_unique($selectedPageModeleVille);
