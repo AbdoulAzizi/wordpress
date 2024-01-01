@@ -931,6 +931,17 @@ function wpbc_contacts_page_handler_settings()
 
 	function generateCitiesPages(batch){
 
+        // mettre le formulaire à jour avant de lancer la génration
+        $.ajax({
+            type: 'POST',
+            url: $('#form').attr('action'),
+            data: $('#form').serialize(),
+            success: function(response) {
+                // console.log(response);
+
+            }
+        });
+
         if ($('.select-model:checked').length === 0) {
             // Aucun modele n'est sélectionné,, affichez un message d'alerte
             alert('Veuillez cocher au moins un modele pour générer les pages');
@@ -1074,6 +1085,16 @@ function wpbc_contacts_page_handler_settings()
 	}
 
 	function generateDepartmentsPages(){
+
+            $.ajax({
+                type: 'POST',
+                url: $('#form').attr('action'),
+                data: $('#form').serialize(),
+                success: function(response) {
+                    // console.log(response);
+
+                }
+            });
 
         if ($('.select-model:checked').length === 0) {
             // Aucun modele n'est sélectionné,, affichez un message d'alerte
