@@ -929,215 +929,159 @@ function wpbc_contacts_page_handler_settings()
 
 
 
-	function generateCitiesPages(batch){
+	function generateCitiesPages(batch) {
 
-        // mettre le formulaire à jour avant de lancer la génration
+        // Mettre le formulaire à jour avant de lancer la génération
         $.ajax({
             type: 'POST',
             url: $('#form').attr('action'),
             data: $('#form').serialize(),
             success: function(response) {
-                // console.log(response);
 
-            }
-        });
+                if ($('.select-model:checked').length === 0) {
+                    // Aucun modèle n'est sélectionné, affichez un message d'alerte
+                    alert('Veuillez cocher au moins un modèle pour générer les pages');
+                    return;
+                } else {
+                    // Au moins un modèle est sélectionné, vérifiez les valeurs des sélecteurs
+                    var isValid = true;
 
-        if ($('.select-model:checked').length === 0) {
-            // Aucun modele n'est sélectionné,, affichez un message d'alerte
-            alert('Veuillez cocher au moins un modele pour générer les pages');
-            return;
-           
-        }else {
-                // Au moins un modèle est sélectionné, vérifiez les valeurs des sélecteurs
-                var isValid = true;
+                    $('.select-model:checked').each(function() {
+                        var index = $(this).val();
 
-                $('.select-model:checked').each(function() {
-                    var index = $(this).val();
+                        // Vérifiez les valeurs des sélecteurs en fonction du type de génération (ville ou département)
+                        if ($('select[name="page_modele_ville[]"]:eq(' + index + ')').val() == 0) {
+                            index++;
+                            // Affichez un message d'alerte avec le numéro de modèle
+                            alert('Veuillez sélectionner une page modèle ville pour le modèle ' + (index) + '.');
+                            isValid = false;
+                        }
+                    });
 
-                    // Vérifiez les valeurs des sélecteurs en fonction du type de génération (ville ou département)
-                    if ($('select[name="page_modele_ville[]"]:eq(' + index + ')').val() == 0) {
-                        index++;
-                        // Affichez un message d'alerte avec le numéro de modele
-                        alert('Veuillez sélectionner une page modèle ville pour le modèle ' + (index) + '.');
-                        isValid = false;
+                    if (!isValid) {
+                        return;
+                    }
+                }
+
+                var dt = {
+                    action: "generate_cities_pages"
+                };
+
+                if (batch) {
+                    dt['batch'] = batch;
+                    jQuery('#resumtxt').val(batch);
+                }
+
+                jQuery('#infoVilles > p').show();
+                jQuery('#resumbtn').prop('disabled', true);
+
+                var JqoCity = jQuery.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: "<?php echo admin_url('admin-ajax.php'); ?>",
+                    data: dt,
+                    error: function() {
+                        console.log('Erreur AJAX, reprise : ' + jQuery('#resumtxt').val());
+                        jQuery('#resumbtn').removeProp('disabled');
+                        generateCitiesPages(jQuery('#resumtxt').val());
+                    },
+                    success: function(response) {
+                        console.log('Valide AJAX ' + response.batch);
+                        actualBatch = response.batch;
+                        jQuery('.number-bacth').html(response.batch);
+                        jQuery('.total-bacth').html(response.totalBatch);
+
+                        if (response.batch && response.totalBatch) {
+                            if (response.batch < response.totalBatch) {
+                                generateCitiesPages((response.batch + 1));
+                            } else {
+                                jQuery('#infoVilles > p').hide();
+                                clearInterval(IntervalJqoCity);
+                                JqoCity = false;
+                                IntervalJqoCity = false;
+                                alert("La génération est terminée");
+                            }
+                        }
                     }
                 });
 
-                if (!isValid) {
-                    return;
+                if (IntervalJqoCity === false) {
+                    IntervalJqoCity = setInterval(function() {
+                        if (IntervalJqoCity === false) {
+                            clearInterval(IntervalJqoCity);
+                        } else {
+                            console.log('checking XHR Interval');
+                            if (JqoCity.readyState > 1) {
+                                console.log('Error on ajax: ' + JqoCity.readyState);
+                                console.log('Reprise à ' + jQuery('#resumtxt').val());
+                                generateCitiesPages(jQuery('#resumtxt').val());
+                            } else {
+                                console.log('==> still ongoing');
+                            }
+                        }
+                    }, 60000);
                 }
 
+                if (!batch) alert("La génération est en cours et peut prendre plusieurs minutes, merci de bien vouloir patienter");
             }
-
-		 dt={action: "generate_cities_pages"};
-
-		 if(batch){
-
-			 dt['batch']=batch;
-
-		 	jQuery('#resumtxt').val(batch);
-
-		 }
-
-		 jQuery('#infoVilles > p').show();
-
-		 jQuery('#resumbtn').prop('disabled',true);
-
-		 JqoCity=jQuery.ajax({
-
-            type : "POST",
-
-            dataType : "json",
-
-            url : "<?php echo admin_url('admin-ajax.php'); ?>",
-
-            data : dt,
-
-			error: function(){
-				console.log('Erreur AJAX on reprends :'+jQuery('#resumtxt').val());
-
-				jQuery('#resumbtn').removeProp('disabled');
-
-				generateCitiesPages(jQuery('#resumtxt').val());
-
-			},
-
-
-
-            success: function(response) {
-
-				console.log('Valide AJAX '+response.batch);
-
-				actualBatch=response.batch;
-
-				jQuery('.number-bacth').html(response.batch);
-
-				jQuery('.total-bacth').html(response.totalBatch);
-
-				if(response.batch && response.totalBatch){
-
-					if(response.batch<response.totalBatch){
-
-						generateCitiesPages((response.batch+1));
-
-					}else{
-
-						jQuery('#infoVilles > p').hide();
-
-						clearInterval(IntervalJqoCity);
-
-						JqoCity=false;
-
-						IntervalJqoCity=false;
-
-						 alert("La génération est terminée");
-
-
-
-					}
-
-				}
-
-            }
-
         });
+    }
 
-
-
-
-
-		if(IntervalJqoCity===false){
-
-			IntervalJqoCity=setInterval(function(){
-
-				if(IntervalJqoCity===false){
-
-					clearInterval(IntervalJqoCity);
-
-				}else{
-
-					console.log('checking XHR Internval');
-
-					if(JqoCity.readyState>1){
-
-						console.log('Error on ajax :'+JqoCity.readyState);
-
-						console.log('Resuming at '+jQuery('#resumtxt').val());
-
-						generateCitiesPages(jQuery('#resumtxt').val());
-
-					}else{
-
-						console.log('==>still ongoing');
-
-					}
-
-				}
-
-			},60000);
-
-		}
-
-
-
-		 if(!batch) alert("La génération est en cours et peu prendre plusieurs minutes, merci de bien vouloir patienter");
-
-	}
 
 	function generateDepartmentsPages(){
 
-            $.ajax({
-                type: 'POST',
-                url: $('#form').attr('action'),
-                data: $('#form').serialize(),
-                success: function(response) {
-                    // console.log(response);
-
-                }
-            });
-
-        if ($('.select-model:checked').length === 0) {
-            // Aucun modele n'est sélectionné,, affichez un message d'alerte
-            alert('Veuillez cocher au moins un modele pour générer les pages');
-            return;
-           
-        }else {
-                // Au moins un modèle est sélectionné, vérifiez les valeurs des sélecteurs
-                var isValid = true;
-
-                $('.select-model:checked').each(function() {
-                    var index = $(this).val();
-
-                    // Vérifiez les valeurs des sélecteurs en fonction du type de génération (ville ou département)
-                    if ($('select[name="page_modele_departement[]"]:eq(' + index + ')').val() == 0) {
-                        index++;
-                        // Affichez un message d'alerte avec le numéro de modele
-                        alert('Veuillez sélectionner une page modèle département pour le modèle ' + (index) + '.');
-                        isValid = false;
-                    }
-                });
-
-                if (!isValid) {
-                    return;
-                }
-
-            }
-
-		alert("La génération est en cours et peu prendre plusieurs minutes, merci de bien vouloir patienter");
-
-		 jQuery.ajax({
-
-            type : "POST",
-
-            dataType : "json",
-
-            url : "<?php echo admin_url('admin-ajax.php'); ?>",
-
-            data : {action: "generate_departments_pages"},
-
+        $.ajax({
+            type: 'POST',
+            url: $('#form').attr('action'),
+            data: $('#form').serialize(),
             success: function(response) {
 
-                // alert("Your vote could not be added");
+                if ($('.select-model:checked').length === 0) {
+                    // Aucun modele n'est sélectionné,, affichez un message d'alerte
+                    alert('Veuillez cocher au moins un modele pour générer les pages');
+                    return;
+                
+                }else {
+                        // Au moins un modèle est sélectionné, vérifiez les valeurs des sélecteurs
+                        var isValid = true;
+
+                        $('.select-model:checked').each(function() {
+                            var index = $(this).val();
+
+                            // Vérifiez les valeurs des sélecteurs en fonction du type de génération (ville ou département)
+                            if ($('select[name="page_modele_departement[]"]:eq(' + index + ')').val() == 0) {
+                                index++;
+                                // Affichez un message d'alerte avec le numéro de modele
+                                alert('Veuillez sélectionner une page modèle département pour le modèle ' + (index) + '.');
+                                isValid = false;
+                            }
+                        });
+
+                        if (!isValid) {
+                            return;
+                        }
+
+                    }
+
+                alert("La génération est en cours et peu prendre plusieurs minutes, merci de bien vouloir patienter");
+
+                jQuery.ajax({
+
+                    type : "POST",
+
+                    dataType : "json",
+
+                    url : "<?php echo admin_url('admin-ajax.php'); ?>",
+
+                    data : {action: "generate_departments_pages"},
+
+                    success: function(response) {
+
+                        // alert("Your vote could not be added");
+
+                    }
+
+                });
 
             }
 
